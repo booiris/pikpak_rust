@@ -5,6 +5,7 @@
         "**/pnpm-lock.yaml": true,
         "LICENSE": true,
         "target": true,
+        "openapitools.json": true,
     },
     "cSpell.words": [
         "Avenir",
@@ -16,6 +17,7 @@
         "jsonwebtoken",
         "nightwatch",
         "openapi",
+        "openapitools",
         "pikpak",
         "pinia",
         "rushstack",
@@ -44,4 +46,7 @@
     },
     "code-runner.saveFileBeforeRun": true,
     "code-runner.preserveFocus": false,
+    "[ignore]": {
+        "editor.defaultFormatter": "foxundermoon.shell-format"
+    },
 }

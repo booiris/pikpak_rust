@@ -16,8 +16,12 @@ humantime = "2.1"
 axum = "0.7"
 tower = "0.4"
 tower-http = { version = "0.5", features = ["cors"] }
-utoipa = { version = "4", features = ["axum_extras"] }
-utoipa-swagger-ui = { version = "7", features = ["axum"] }
+utoipa = { git = "https://github.com/juhaku/utoipa.git", rev = "674d0b997db6cc6345249332a714342bd8a75bd7", features = [
+    "axum_extras",
+] }
+utoipa-swagger-ui = { git = "https://github.com/juhaku/utoipa.git", rev = "674d0b997db6cc6345249332a714342bd8a75bd7", features = [
+    "axum",
+] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 lazy_static = "1.4"

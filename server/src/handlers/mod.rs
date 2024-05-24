@@ -3,17 +3,15 @@ use lazy_static::lazy_static;
 use rand::{distributions::Alphanumeric, Rng};
 
 use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
+use utoipa::{ToResponse, ToSchema};
 
 use crate::utils::jwt::Cipher;
 
 pub mod login;
 
-#[derive(Serialize, Deserialize, ToSchema, Clone)]
+#[derive(Serialize, Deserialize, ToSchema, ToResponse, Clone)]
 pub(crate) struct BaseResp {
-    #[schema(example = "0")]
     code: i32,
-    #[schema(example = "success")]
     message: String,
 }
 
@@ -51,3 +49,11 @@ lazy_static! {
     };
     pub(crate) static ref CIPHER: Cipher = Cipher::new();
 }
+
+use utoipa::OpenApi;
+
+#[derive(OpenApi)]
+#[openapi(nest(
+    (path = "/api/login", api = login::LoginApi)
+))]
+pub struct ApiDoc;

@@ -9,10 +9,9 @@ use tower_http::cors::{Any, CorsLayer};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use crate::{handlers::login::login, openapi_doc::ApiDoc};
+use crate::handlers::{login::login, ApiDoc};
 
 mod handlers;
-mod openapi_doc;
 mod utils;
 
 pub async fn start_server(host: impl Into<String>, port: impl Into<&str>) -> Result<(), Error> {
@@ -21,13 +20,11 @@ pub async fn start_server(host: impl Into<String>, port: impl Into<&str>) -> Res
         .allow_methods(vec![Method::GET, Method::POST])
         .allow_headers(Any);
 
-    let app = Router::new().route("/", get(hello)).nest(
-        "/api",
-        Router::new()
-            .route("/login", post(login))
-            .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
-            .layer(cors),
-    );
+    let app = Router::new()
+        .route("/", get(hello))
+        .nest("/api", Router::new().route("/login", post(login)))
+        .merge(SwaggerUi::new("/doc").url("/openapi.json", ApiDoc::openapi()))
+        .layer(cors);
 
     let addr = host.into() + ":" + port.into();
     let listener = tokio::net::TcpListener::bind(&addr)
