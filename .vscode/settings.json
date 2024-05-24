@@ -3,13 +3,45 @@
         "Cargo.lock": true,
         "**/node_modules": true,
         "**/pnpm-lock.yaml": true,
+        "LICENSE": true,
+        "target": true,
     },
     "cSpell.words": [
         "Avenir",
+        "chrono",
+        "Encrypter",
         "fontawesome",
         "fortawesome",
+        "humantime",
+        "jsonwebtoken",
+        "nightwatch",
+        "openapi",
         "pikpak",
         "pinia",
+        "rushstack",
+        "tsbuildinfo",
+        "utoipa",
         "Vite"
-    ]
+    ],
+    "resmon.show.mem": true,
+    "resmon.show.disk": false,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit"
+    },
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[rust]": {
+        "editor.defaultFormatter": "rust-lang.rust-analyzer"
+    },
+    "code-runner.runInTerminal": true,
+    "code-runner.clearPreviousOutput": true,
+    "code-runner.fileDirectoryAsCwd": true,
+    "code-runner.executorMap": {
+        "rust": "cd $workspaceRoot && cargo run server"
+    },
+    "code-runner.saveFileBeforeRun": true,
+    "code-runner.preserveFocus": false,
 }

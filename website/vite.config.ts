@@ -10,7 +10,7 @@ export default defineConfig({
   plugins: [
     vue(),
     VueDevTools(),
-    bundleAnalyzer(),
+    bundleAnalyzer({}),
   ],
   resolve: {
     alias: {

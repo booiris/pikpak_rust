@@ -1,10 +1,31 @@
-[package]
-name = "pikpak_rust"
-version = "0.1.0"
-edition = "2021"
-
 [workspace]
+resolver = "2"
+members = ["pikpak_core", "server"]
 
-members = ["server"]
+[workspace.package]
+edition = "2021"
+authors = ["booiris <booiris02@gmail.com>"]
+license = "MIT"
 
-[dependencies]
+[workspace.dependencies]
+tokio = { version = "1", features = ["full"] }
+log = "0.4"
+fern = "0.6"
+anyhow = "1.0"
+humantime = "2.1"
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors"] }
+utoipa = { version = "4", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "7", features = ["axum"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+lazy_static = "1.4"
+jsonwebtoken = "9"
+rand = "0.8"
+ring = "0.17"
+chrono = "0.4"
+parking_lot = "0.12"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"

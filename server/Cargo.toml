@@ -1,6 +1,34 @@
 [package]
 name = "server"
 version = "0.1.0"
-edition = "2021"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
 
 [dependencies]
+tokio = { workspace = true }
+axum = { workspace = true }
+log = { workspace = true }
+fern = { workspace = true }
+anyhow = { workspace = true }
+humantime = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+utoipa = { workspace = true }
+utoipa-swagger-ui = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+lazy_static = { workspace = true }
+jsonwebtoken = { workspace = true }
+rand = { workspace = true }
+ring = { workspace = true }
+chrono = { workspace = true }
+parking_lot = { workspace = true }
+pikpak_core = { path = "../pikpak_core" }
+
+
+[features]
+__local_test = []
+
+[lints]
+workspace = true
