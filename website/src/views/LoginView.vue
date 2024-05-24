@@ -39,9 +39,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useBackendUrlStore } from '@/stores/backend_url';
-import { login as loginApi } from '@/services/login';
+import { useJWTStore } from '@/stores/jwt';
+import { login as LoginApi } from '@/services/login'
 
-const urlStore = useBackendUrlStore();
+
 const email = ref<string>('');
 const password = ref<string>('');
 const url = ref<string>(`http://${window.location.hostname}:22522`);
@@ -51,6 +52,7 @@ const errors = ref<{ email: string, password: string, url: string }>({
     password: '',
     url: ''
 });
+
 
 const login = async () => {
     errors.value = { email: '', password: '', url: '' };
@@ -70,10 +72,11 @@ const login = async () => {
     }
 
     if (!errors.value.email && !errors.value.password && !errors.value.url) {
-        urlStore.setUrl(url.value);
+        useBackendUrlStore().setUrl(url.value);
         try {
-            const data = await loginApi(email.value, password.value);
+            const data = await LoginApi(email.value, password.value);
             console.log('Login successful:', data);
+            useJWTStore().setJWT(data.data.jwt)
         } catch (error) {
             console.error('Login failed:', error);
         }
