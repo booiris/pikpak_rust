@@ -10,8 +10,9 @@ use tower_http::cors::{Any, CorsLayer};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use crate::handlers::{login::login, ApiDoc, PIKPAK_CORE_CLIENT};
+use crate::handlers::{login::login, remote_list::remote_list, ApiDoc, PIKPAK_CORE_CLIENT};
 
+mod extension;
 mod handlers;
 mod utils;
 
@@ -34,7 +35,12 @@ pub async fn start_server(
 
     let app = Router::new()
         .route("/", get(hello))
-        .nest("/api", Router::new().route("/login", post(login)))
+        .nest(
+            "/api",
+            Router::new()
+                .route("/login", post(login))
+                .route("/remote_list", get(remote_list)),
+        )
         .merge(SwaggerUi::new("/doc").url("/openapi.json", ApiDoc::openapi()))
         .layer(cors);
 

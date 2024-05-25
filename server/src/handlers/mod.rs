@@ -3,17 +3,17 @@ use std::sync::OnceLock;
 use axum::response::IntoResponse;
 use lazy_static::lazy_static;
 use pikpak_core::PkiPakApiClient;
-use rand::{distributions::Alphanumeric, Rng};
 
 use serde::{Deserialize, Serialize};
 use utoipa::{ToResponse, ToSchema};
 
-use crate::utils::jwt::Cipher;
+use crate::utils::token::Cipher;
 
 pub mod login;
+pub mod remote_list;
 
 #[derive(Serialize, Deserialize, ToSchema, ToResponse, Clone)]
-pub(crate) struct BaseResp {
+pub struct BaseResp {
     code: i32,
     message: String,
 }
@@ -48,13 +48,6 @@ impl Default for BaseResp {
 }
 
 lazy_static! {
-    pub(crate) static ref JWT_SECRET: String = {
-        let rng = rand::thread_rng();
-        rng.sample_iter(&Alphanumeric)
-            .take(32)
-            .map(char::from)
-            .collect()
-    };
     pub(crate) static ref CIPHER: Cipher = Cipher::new();
 }
 
@@ -70,6 +63,7 @@ use utoipa::OpenApi;
 
 #[derive(OpenApi)]
 #[openapi(nest(
-    (path = "/api/login", api = login::LoginApi)
+    (path = "/api/login", api = login::LoginApi),
+    (path = "/api/remote_list", api = remote_list::RemoteListApi),
 ))]
 pub struct ApiDoc;

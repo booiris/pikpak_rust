@@ -6,7 +6,7 @@ const client = () => {
   return new LoginApi(new Configuration({ basePath: useBackendUrlStore().storedUrl }))
 }
 
-export const login = async (email: string, password: string) => {
+export const loginApi = async (email: string, password: string) => {
   const req = { email, password } as LoginReq
   return client().login(req)
 }

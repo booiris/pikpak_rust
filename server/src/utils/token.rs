@@ -1,4 +1,4 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 
 use ring::{
     aead::{self, Aad, BoundKey, Nonce, NonceSequence, NONCE_LEN},
@@ -42,6 +42,7 @@ impl Cipher {
 
     pub(crate) fn encrypt(&self, data: &[u8]) -> Result<Vec<u8>, anyhow::Error> {
         let unbound_key = aead::UnboundKey::new(&aead::AES_256_GCM, &self.key)
+            .map_err(|e| anyhow!(e))
             .context("[cipher encrypt] create key error")?;
 
         let nonce = &mut NONCE.clone();
@@ -51,12 +52,14 @@ impl Cipher {
 
         sealing_key
             .seal_in_place_append_tag(Aad::empty(), &mut data)
+            .map_err(|e| anyhow!(e))
             .context("[cipher encrypt] encrypt data error")?;
         Ok(data)
     }
 
     pub(crate) fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, anyhow::Error> {
         let unbound_key = aead::UnboundKey::new(&aead::AES_256_GCM, &self.key)
+            .map_err(|e| anyhow!(e))
             .context("[cipher decrypt] create key error")?;
 
         let nonce = &mut NONCE.clone();
@@ -65,12 +68,13 @@ impl Cipher {
         let mut data = data.to_vec();
         open_key
             .open_in_place(Aad::empty(), &mut data)
+            .map_err(|e| anyhow!(e))
             .context("[cipher decrypt] decrypt data error")
             .map(|x| x.to_vec())
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Claims {
     pub email: String,
     pub password: String,

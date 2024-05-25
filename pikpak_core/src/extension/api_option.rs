@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use reqwest::RequestBuilder;
 
-use crate::error::Error;
+use crate::{api::Ident, error::Error, PkiPakApiClient};
 
 #[derive(Debug, Clone, Default)]
 pub struct ApiOption {
@@ -37,11 +37,18 @@ pub trait ApiSend {
     fn api_send(
         self,
         options: ApiOption,
+        client: &PkiPakApiClient,
+        ident: &Ident,
     ) -> impl std::future::Future<Output = Result<reqwest::Response, Error>> + Send;
 }
 
 impl ApiSend for RequestBuilder {
-    async fn api_send(mut self, option: ApiOption) -> Result<reqwest::Response, Error> {
+    async fn api_send(
+        mut self,
+        option: ApiOption,
+        client: &PkiPakApiClient,
+        ident: &Ident,
+    ) -> Result<reqwest::Response, Error> {
         if let Some(time_out) = option.timeout {
             self = self.timeout(time_out);
         }
@@ -53,9 +60,12 @@ impl ApiSend for RequestBuilder {
                 .unwrap_or(Duration::from_secs(1));
             if retry_times == 0 {
                 loop {
+                    // 更新 token 报错就不重试了
+                    let token = client.auth_token(ident).await?;
                     match self
                         .try_clone()
                         .ok_or(Error::CloneRequestError(format!("loop times: {}", cnt)))?
+                        .bearer_auth(token)
                         .send()
                         .await
                     {
@@ -69,9 +79,12 @@ impl ApiSend for RequestBuilder {
                 }
             } else {
                 for i in 0..retry_times {
+                    // 更新 token 报错就不重试了
+                    let token = client.auth_token(ident).await?;
                     match self
                         .try_clone()
                         .ok_or(Error::CloneRequestError(format!("loop times: {}", cnt)))?
+                        .bearer_auth(token)
                         .send()
                         .await
                     {
@@ -88,6 +101,8 @@ impl ApiSend for RequestBuilder {
                 unreachable!("retry loop should return before this line");
             }
         } else {
+            let token = client.auth_token(ident).await?;
+            self = self.bearer_auth(token);
             self.send().await.map_err(Error::NetworkError)
         }
     }

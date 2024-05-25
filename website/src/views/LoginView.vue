@@ -39,8 +39,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useBackendUrlStore } from '@/stores/backend_url';
-import { useJWTStore } from '@/stores/jwt';
-import { login as LoginApi } from '@/services/login'
+import { useTokenStore } from '@/stores/token';
+import { loginApi } from '@/services/login'
+import { remoteListApi } from '@/services/remote_list'
 
 
 const email = ref<string>('');
@@ -74,9 +75,10 @@ const login = async () => {
     if (!errors.value.email && !errors.value.password && !errors.value.url) {
         useBackendUrlStore().setUrl(url.value);
         try {
-            const data = await LoginApi(email.value, password.value);
+            const data = await loginApi(email.value, password.value);
             console.log('Login successful:', data);
-            useJWTStore().setJWT(data.data.jwt)
+            useTokenStore().setToken(data.data.token)
+            await remoteListApi()
         } catch (error) {
             console.error('Login failed:', error);
         }
@@ -99,7 +101,6 @@ const validateUrl = (url: string): boolean => {
 const hintUrl = () => {
     return `http(s)://${window.location.hostname}:22522`;
 }
-
 </script>
 
 <style scoped>
@@ -168,7 +169,9 @@ input {
     border-radius: 8px;
     font-size: 16px;
     outline: none;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
 input:focus {
@@ -208,7 +211,9 @@ input:focus {
     border-radius: 8px;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    transition:
+        background-color 0.3s ease,
+        transform 0.3s ease;
 }
 
 .login-button:hover {

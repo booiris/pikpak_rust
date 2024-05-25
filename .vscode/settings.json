@@ -6,6 +6,7 @@
         "LICENSE": true,
         "target": true,
         "openapitools.json": true,
+        "website/src/api": true,
     },
     "cSpell.words": [
         "ahash",

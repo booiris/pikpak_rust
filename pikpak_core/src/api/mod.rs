@@ -50,10 +50,8 @@ impl PkiPakApiClient {
         ident: &Ident,
         option: Option<ApiOption>,
     ) -> Result<Resp, Error> {
-        let token = self.auth_token(ident).await?;
-        req = req.bearer_auth(token);
         let resp = req
-            .api_send(option.unwrap_or_default())
+            .api_send(option.unwrap_or_default(), self, ident)
             .await?
             .text()
             .await

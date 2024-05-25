@@ -84,7 +84,26 @@ export interface LoginResp {
      * @type {string}
      * @memberof LoginResp
      */
-    'jwt': string;
+    'token': string;
+}
+/**
+ * 
+ * @export
+ * @interface RemoteListResp
+ */
+export interface RemoteListResp {
+    /**
+     * 
+     * @type {number}
+     * @memberof RemoteListResp
+     */
+    'code': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListResp
+     */
+    'message': string;
 }
 
 /**
@@ -188,6 +207,103 @@ export class LoginApi extends BaseAPI {
      */
     public login(loginReq: LoginReq, options?: RawAxiosRequestConfig) {
         return LoginApiFp(this.configuration).login(loginReq, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * RemoteListApi - axios parameter creator
+ * @export
+ */
+export const RemoteListApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        remoteList: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/remote_list`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * RemoteListApi - functional programming interface
+ * @export
+ */
+export const RemoteListApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = RemoteListApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async remoteList(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LoginResp>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.remoteList(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['RemoteListApi.remoteList']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * RemoteListApi - factory interface
+ * @export
+ */
+export const RemoteListApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = RemoteListApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        remoteList(options?: any): AxiosPromise<LoginResp> {
+            return localVarFp.remoteList(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * RemoteListApi - object-oriented interface
+ * @export
+ * @class RemoteListApi
+ * @extends {BaseAPI}
+ */
+export class RemoteListApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RemoteListApi
+     */
+    public remoteList(options?: RawAxiosRequestConfig) {
+        return RemoteListApiFp(this.configuration).remoteList(options).then((request) => request(this.axios, this.basePath));
     }
 }
 

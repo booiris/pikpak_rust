@@ -1,13 +1,13 @@
 use axum::Json;
+use base64::prelude::*;
 use chrono::{Duration, Utc};
-use jsonwebtoken::{encode, EncodingKey, Header};
 use pikpak_core::api::login::ApiLoginReq;
 use serde::{Deserialize, Serialize};
 use utoipa::{ToResponse, ToSchema};
 
-use crate::{handlers::get_pikpak_client, utils::jwt::Claims};
+use crate::{handlers::get_pikpak_client, utils::token::Claims};
 
-use super::{BaseResp, CIPHER, JWT_SECRET};
+use super::{BaseResp, CIPHER};
 
 #[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
 pub struct LoginReq {
@@ -19,7 +19,7 @@ pub struct LoginReq {
 pub struct LoginResp {
     #[serde(flatten)]
     base_resp: BaseResp,
-    jwt: String,
+    token: String,
 }
 
 #[utoipa::path(
@@ -63,25 +63,15 @@ pub async fn login(Json(req): Json<LoginReq>) -> Result<Json<LoginResp>, BaseRes
         BaseResp::with_error(e)
     })?;
 
-    let token = encode(
-        &Header::default(),
-        &encrypted_claims,
-        &EncodingKey::from_secret(JWT_SECRET.as_ref()),
-    )
-    .map_err(|e| {
-        log::error!("[login] encode token error: {}", e);
-        BaseResp::with_error(e)
-    })?;
-
     Ok(Json(LoginResp {
         base_resp: Default::default(),
-        jwt: token,
+        token: BASE64_STANDARD.encode(encrypted_claims),
     }))
 }
 
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(login),
-    components(schemas(LoginReq, LoginResp, BaseResp), responses(BaseResp, BaseResp))
+    components(schemas(LoginReq, LoginResp, BaseResp), responses(LoginResp, BaseResp))
 )]
 pub(super) struct LoginApi;
