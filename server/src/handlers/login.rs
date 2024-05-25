@@ -1,10 +1,11 @@
 use axum::Json;
 use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
+use pikpak_core::api::login::ApiLoginReq;
 use serde::{Deserialize, Serialize};
 use utoipa::{ToResponse, ToSchema};
 
-use crate::utils::jwt::Claims;
+use crate::{handlers::get_pikpak_client, utils::jwt::Claims};
 
 use super::{BaseResp, CIPHER, JWT_SECRET};
 
@@ -31,13 +32,25 @@ pub struct LoginResp {
     )
 )]
 pub async fn login(Json(req): Json<LoginReq>) -> Result<Json<LoginResp>, BaseResp> {
-    log::info!("[login] request: {:?}", req);
+    log::trace!("[login] request: {:?}", req);
 
     let expiration = Utc::now() + Duration::hours(1);
+    let token = get_pikpak_client()
+        .login(ApiLoginReq {
+            username: req.email.clone(),
+            password: req.password.clone(),
+        })
+        .await
+        .map_err(|e| {
+            log::error!("[login] login error: {}", e);
+            BaseResp::with_error(e)
+        })?;
     let claims = Claims {
         exp: expiration.timestamp() as usize,
         email: req.email,
         password: req.password,
+        oauth2_token: token.access_token,
+        oauth2_refresh_token: token.refresh_token,
     };
 
     let claims = serde_json::to_vec(&claims).map_err(|e| {

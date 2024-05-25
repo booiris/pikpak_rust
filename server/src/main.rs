@@ -4,7 +4,7 @@ use server::start_server;
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     setup_server_logger(log::LevelFilter::Debug)?;
-    start_server("0.0.0.0", "22522").await
+    start_server("0.0.0.0", "22522", None).await
 }
 
 fn setup_server_logger(level: log::LevelFilter) -> Result<(), anyhow::Error> {

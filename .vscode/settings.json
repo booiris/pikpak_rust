@@ -8,20 +8,27 @@
         "openapitools.json": true,
     },
     "cSpell.words": [
+        "ahash",
         "Avenir",
         "chrono",
+        "consts",
         "Encrypter",
         "fontawesome",
         "fortawesome",
         "humantime",
         "jsonwebtoken",
+        "mypikpak",
         "nightwatch",
         "openapi",
         "openapitools",
+        "pikcloud",
         "pikpak",
         "pinia",
+        "reqwest",
         "rushstack",
+        "thiserror",
         "tsbuildinfo",
+        "ttps",
         "utoipa",
         "Vite"
     ],
@@ -31,7 +38,6 @@
         "source.fixAll": "explicit"
     },
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
@@ -49,4 +55,22 @@
     "[ignore]": {
         "editor.defaultFormatter": "foxundermoon.shell-format"
     },
+    "rust-analyzer.check.features": [
+        "__local_test"
+    ],
+    "rust-analyzer.cargo.features": [
+        "__local_test"
+    ],
+    "[dotenv]": {
+        "editor.defaultFormatter": "foxundermoon.shell-format"
+    },
+    "cSpell.ignorePaths": [
+        "package-lock.json",
+        "node_modules",
+        "vscode-extension",
+        ".git/objects",
+        ".vscode",
+        ".vscode-insiders",
+        "**/consts.rs"
+    ],
 }

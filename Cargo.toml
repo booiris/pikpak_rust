@@ -30,6 +30,16 @@ rand = "0.8"
 ring = "0.17"
 chrono = "0.4"
 parking_lot = "0.12"
+reqwest = { version = "0.12", features = ["json", "stream"] }
+thiserror = "1.0"
+md5 = "0.7"
+oauth2 = "4.4"
+ahash = "0.8"
+
+env_logger = "0.11"
+ctor = "0.2"
+dotenv_codegen = "0.15"
+
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

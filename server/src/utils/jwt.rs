@@ -75,6 +75,8 @@ pub struct Claims {
     pub email: String,
     pub password: String,
     pub exp: usize,
+    pub oauth2_token: String,
+    pub oauth2_refresh_token: Option<String>,
 }
 
 #[cfg(test)]

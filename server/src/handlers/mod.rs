@@ -1,5 +1,8 @@
+use std::sync::OnceLock;
+
 use axum::response::IntoResponse;
 use lazy_static::lazy_static;
+use pikpak_core::PkiPakApiClient;
 use rand::{distributions::Alphanumeric, Rng};
 
 use serde::{Deserialize, Serialize};
@@ -17,7 +20,12 @@ pub(crate) struct BaseResp {
 
 impl IntoResponse for BaseResp {
     fn into_response(self) -> axum::response::Response {
-        axum::Json(self).into_response()
+        let code = self.code;
+        let mut resp = axum::Json(self).into_response();
+        if code != 0 {
+            *resp.status_mut() = axum::http::StatusCode::BAD_REQUEST;
+        }
+        resp
     }
 }
 
@@ -48,6 +56,14 @@ lazy_static! {
             .collect()
     };
     pub(crate) static ref CIPHER: Cipher = Cipher::new();
+}
+
+pub(crate) static PIKPAK_CORE_CLIENT: OnceLock<PkiPakApiClient> = OnceLock::new();
+
+pub(crate) fn get_pikpak_client() -> &'static PkiPakApiClient {
+    PIKPAK_CORE_CLIENT
+        .get()
+        .expect("pikpak core client not initialized")
 }
 
 use utoipa::OpenApi;

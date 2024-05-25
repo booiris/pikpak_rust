@@ -1,20 +1,32 @@
-use anyhow::{Context, Error};
+use anyhow::{anyhow, Context, Error};
 use axum::{
     http::Method,
     routing::{get, post},
     serve, Router,
 };
 use log::{error, info};
+use pikpak_core::{PkiPakApiClient, PkiPakApiConfig};
 use tower_http::cors::{Any, CorsLayer};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use crate::handlers::{login::login, ApiDoc};
+use crate::handlers::{login::login, ApiDoc, PIKPAK_CORE_CLIENT};
 
 mod handlers;
 mod utils;
 
-pub async fn start_server(host: impl Into<String>, port: impl Into<&str>) -> Result<(), Error> {
+pub async fn start_server(
+    host: impl Into<String>,
+    port: impl Into<&str>,
+    proxy: Option<String>,
+) -> Result<(), Error> {
+    PIKPAK_CORE_CLIENT
+        .set(PkiPakApiClient::new(Some(PkiPakApiConfig { proxy })))
+        .map_err(|_| {
+            error!("[rust pikpak server] set pikpak core client error");
+            anyhow!("set pikpak core client error")
+        })?;
+
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods(vec![Method::GET, Method::POST])

@@ -8,6 +8,26 @@ license.workspace = true
 [dependencies]
 tokio = { workspace = true }
 log = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+rand = { workspace = true }
+md5 = { workspace = true }
+chrono = { workspace = true }
+oauth2 = { workspace = true }
+anyhow = { workspace = true }
+parking_lot = { workspace = true }
+ahash = { workspace = true }
+lazy_static = { workspace = true }
+
+[dev-dependencies]
+env_logger = { workspace = true }
+ctor = { workspace = true }
+dotenv_codegen = { workspace = true }
 
 [lints]
 workspace = true
+
+[features]
+__local_test = []
