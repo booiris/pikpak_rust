@@ -7,8 +7,10 @@ use reqwest::{header, Client};
 
 pub mod api;
 mod consts;
+pub mod core;
 pub mod error;
 pub mod extension;
+mod utils;
 
 #[derive(Clone, Debug, Default)]
 pub struct PkiPakApiConfig {
@@ -31,6 +33,7 @@ impl PkiPakApiClient {
 pub(crate) struct PkiPakApiClientInner {
     pub client: Client,
     pub oauth2_client: BasicClient,
+    pub device_id: String,
 }
 
 impl PkiPakApiClientInner {
@@ -66,22 +69,37 @@ impl PkiPakApiClientInner {
         Self {
             client,
             oauth2_client,
+            device_id,
         }
     }
 }
 
 #[cfg(test)]
 mod test {
+    use std::sync::OnceLock;
+
+    use dotenv_codegen::dotenv;
+
+    use crate::api::Ident;
+
     #[ctor::ctor]
     fn init_test() {
         env_logger::builder()
-            .filter_level(log::LevelFilter::Trace)
+            .filter_level(log::LevelFilter::Debug)
             .is_test(true)
             .try_init()
             .unwrap();
     }
 
-    pub fn test_client() -> super::PkiPakApiClient {
-        super::PkiPakApiClient::new(None)
+    pub fn test_client() -> &'static super::PkiPakApiClient {
+        static CLIENT: OnceLock<super::PkiPakApiClient> = OnceLock::new();
+        CLIENT.get_or_init(|| super::PkiPakApiClient::new(None))
+    }
+
+    pub fn test_ident() -> Ident {
+        Ident {
+            username: dotenv!("username").into(),
+            password: dotenv!("password").into(),
+        }
     }
 }

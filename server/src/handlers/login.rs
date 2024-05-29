@@ -1,11 +1,15 @@
 use axum::Json;
 use base64::prelude::*;
 use chrono::{Duration, Utc};
+use jsonwebtoken::{encode, EncodingKey, Header};
 use pikpak_core::api::login::ApiLoginReq;
 use serde::{Deserialize, Serialize};
 use utoipa::{ToResponse, ToSchema};
 
-use crate::{handlers::get_pikpak_client, utils::token::Claims};
+use crate::{
+    handlers::{get_pikpak_client, JWT_SECRET},
+    utils::token::{Claims, TokenData},
+};
 
 use super::{BaseResp, CIPHER};
 
@@ -34,9 +38,9 @@ pub struct LoginResp {
 pub async fn login(Json(req): Json<LoginReq>) -> Result<Json<LoginResp>, BaseResp> {
     log::trace!("[login] request: {:?}", req);
 
-    let expiration = Utc::now() + Duration::hours(1);
-    let token = get_pikpak_client()
-        .login(ApiLoginReq {
+    let expiration = Utc::now() + Duration::days(1);
+    get_pikpak_client()
+        .login(&ApiLoginReq {
             username: req.email.clone(),
             password: req.password.clone(),
         })
@@ -45,27 +49,35 @@ pub async fn login(Json(req): Json<LoginReq>) -> Result<Json<LoginResp>, BaseRes
             log::error!("[login] login error: {}", e);
             BaseResp::with_error(e)
         })?;
-    let claims = Claims {
-        exp: expiration.timestamp() as usize,
+    let token_data = TokenData {
         email: req.email,
         password: req.password,
-        oauth2_token: token.access_token,
-        oauth2_refresh_token: token.refresh_token,
     };
-
-    let claims = serde_json::to_vec(&claims).map_err(|e| {
-        log::error!("[login] serialize claims error: {}", e);
+    let token_data = serde_json::to_vec(&token_data).map_err(|e| {
+        log::error!("[login] serialize token error: {}", e);
         BaseResp::with_error(e)
     })?;
-
-    let encrypted_claims = CIPHER.encrypt(&claims).map_err(|e| {
-        log::error!("[login] encrypt claims error: {}", e);
+    let encrypted_token_data = CIPHER.encrypt(&token_data).map_err(|e| {
+        log::error!("[login] encrypt token error: {}", e);
+        BaseResp::with_error(e)
+    })?;
+    let token = BASE64_STANDARD.encode(encrypted_token_data);
+    let jwt = encode(
+        &Header::default(),
+        &Claims {
+            sub: token,
+            exp: expiration.timestamp() as usize,
+        },
+        &EncodingKey::from_secret(JWT_SECRET.as_ref()),
+    )
+    .map_err(|e| {
+        log::error!("[login] encode jwt error: {}", e);
         BaseResp::with_error(e)
     })?;
 
     Ok(Json(LoginResp {
         base_resp: Default::default(),
-        token: BASE64_STANDARD.encode(encrypted_claims),
+        token: jwt,
     }))
 }
 

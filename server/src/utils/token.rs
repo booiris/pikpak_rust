@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Context};
 
+use pikpak_core::api::Ident;
 use ring::{
     aead::{self, Aad, BoundKey, Nonce, NonceSequence, NONCE_LEN},
     error::Unspecified,
@@ -75,12 +76,24 @@ impl Cipher {
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
-pub struct Claims {
+pub struct TokenData {
     pub email: String,
     pub password: String,
+}
+
+impl From<TokenData> for Ident {
+    fn from(val: TokenData) -> Self {
+        Ident {
+            username: val.email,
+            password: val.password,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct Claims {
+    pub sub: String,
     pub exp: usize,
-    pub oauth2_token: String,
-    pub oauth2_refresh_token: Option<String>,
 }
 
 #[cfg(test)]

@@ -4,13 +4,14 @@ use axum::{
     http::{header::AUTHORIZATION, request::Parts, StatusCode},
 };
 use base64::prelude::*;
+use jsonwebtoken::{decode, DecodingKey, Validation};
 
 use crate::{
-    handlers::{BaseResp, CIPHER},
-    utils::token::Claims,
+    handlers::{BaseResp, CIPHER, JWT_SECRET},
+    utils::token::{Claims, TokenData},
 };
 
-pub struct AuthExtractor(pub Claims);
+pub struct AuthExtractor(pub TokenData);
 
 #[async_trait]
 impl<S> FromRequestParts<S> for AuthExtractor
@@ -44,29 +45,67 @@ where
         }
 
         let token = auth.trim_start_matches("Bearer ");
-        let token = BASE64_STANDARD.decode(token).map_err(|e| {
+        let token = decode::<Claims>(
+            token,
+            &DecodingKey::from_secret(JWT_SECRET.as_ref()),
+            &Validation::default(),
+        )
+        .map_err(|e| {
             (
                 StatusCode::BAD_REQUEST,
-                BaseResp::with_error(format!(
-                    "`AUTHORIZATION` header is not valid base64, err: {}",
-                    e
-                )),
+                BaseResp::with_error(format!("Failed to decode token: {}", e)),
             )
         })?;
+
+        if token.claims.exp < chrono::Utc::now().timestamp() as usize {
+            return Err((
+                StatusCode::BAD_REQUEST,
+                BaseResp::with_error("token has expired"),
+            ));
+        }
+
+        let token = BASE64_STANDARD
+            .decode(token.claims.sub.as_bytes())
+            .map_err(|e| {
+                (
+                    StatusCode::BAD_REQUEST,
+                    BaseResp::with_error(format!(
+                        "`AUTHORIZATION` header is not valid base64, err: {}",
+                        e
+                    )),
+                )
+            })?;
 
         let claims = CIPHER.decrypt(&token).map_err(|e| {
             (
                 StatusCode::BAD_REQUEST,
-                BaseResp::with_error(format!("Failed to decrypt JWT: {}", e)),
+                BaseResp::with_error(format!("Failed to decrypt token: {}", e)),
             )
         })?;
 
-        let claim: Claims = serde_json::from_slice(&claims).map_err(|e| {
+        let claim: TokenData = serde_json::from_slice(&claims).map_err(|e| {
             (
                 StatusCode::BAD_REQUEST,
-                BaseResp::with_error(format!("Failed to parse JWT claims: {}", e)),
+                BaseResp::with_error(format!("Failed to parse token: {}", e)),
             )
         })?;
+
         Ok(AuthExtractor(claim))
+    }
+}
+
+pub(crate) struct SecurityAddon;
+
+impl utoipa::Modify for SecurityAddon {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        let components = openapi.components.as_mut().unwrap(); // we can unwrap safely since there already is components registered.
+        components.add_security_scheme(
+            "jwt",
+            utoipa::openapi::security::SecurityScheme::Http(
+                utoipa::openapi::security::HttpBuilder::new()
+                    .scheme(utoipa::openapi::security::HttpAuthScheme::Bearer)
+                    .build(),
+            ),
+        )
     }
 }

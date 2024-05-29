@@ -13,5 +13,7 @@ pub enum Error {
     #[error("Api error: {:?}", .0)]
     ApiError(ErrorResp),
     #[error("Auth error: {:?}", .0)]
-    Oauth2Error(#[from] anyhow::Error),
+    Oauth2Error(String),
+    #[error("Request error: {:?}", .0)]
+    RequestError(#[from] anyhow::Error),
 }

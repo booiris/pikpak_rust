@@ -6,11 +6,7 @@ use oauth2::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    api::{token::AUTH_TOKEN, Ident},
-    error::Error,
-    PkiPakApiClient,
-};
+use crate::{api::Ident, core::token::AUTH_TOKEN, error::Error, PkiPakApiClient};
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct ApiLoginReq {
@@ -26,7 +22,7 @@ pub struct AuthTokenType {
 }
 
 impl PkiPakApiClient {
-    pub async fn login(&self, req: ApiLoginReq) -> Result<AuthTokenType, Error> {
+    pub async fn login(&self, req: &ApiLoginReq) -> Result<AuthTokenType, Error> {
         let resp = self
             .inner
             .oauth2_client
@@ -38,7 +34,7 @@ impl PkiPakApiClient {
             .await
             .map_err(|e| {
                 error!("[pikpak core login] {:?}", e);
-                Error::Oauth2Error(anyhow::anyhow!(format!("{:?}", e)))
+                Error::Oauth2Error(format!("{:?}", e))
             })?;
 
         trace!("[pikpak core login] {:#?}", resp);
@@ -51,8 +47,8 @@ impl PkiPakApiClient {
 
         AUTH_TOKEN.set(
             Ident {
-                username: req.username,
-                password: req.password,
+                username: req.username.clone(),
+                password: req.password.clone(),
             },
             token.clone(),
             Some(token.expires_in / 2),
@@ -78,7 +74,7 @@ mod test {
             password: dotenv!("password").to_string(),
         };
 
-        let resp = test_client().login(req).await;
+        let resp = test_client().login(&req).await;
         info!("{:#?}", resp);
     }
 }

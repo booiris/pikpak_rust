@@ -12,214 +12,224 @@
  * Do not edit the class manually.
  */
 
-
-import type { Configuration } from './configuration';
-import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
-import globalAxios from 'axios';
+import type { Configuration } from './configuration'
+import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios'
+import globalAxios from 'axios'
 // Some imports not used depending on template conditions
 // @ts-ignore
-import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from './common';
-import type { RequestArgs } from './base';
+import {
+  DUMMY_BASE_URL,
+  assertParamExists,
+  setApiKeyToObject,
+  setBasicAuthToObject,
+  setBearerAuthToObject,
+  setOAuthToObject,
+  setSearchParams,
+  serializeDataIfNeeded,
+  toPathString,
+  createRequestFunction
+} from './common'
+import type { RequestArgs } from './base'
 // @ts-ignore
-import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './base';
+import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './base'
 
 /**
- * 
+ *
  * @export
  * @interface BaseResp
  */
 export interface BaseResp {
-    /**
-     * 
-     * @type {number}
-     * @memberof BaseResp
-     */
-    'code': number;
-    /**
-     * 
-     * @type {string}
-     * @memberof BaseResp
-     */
-    'message': string;
+  /**
+   *
+   * @type {number}
+   * @memberof BaseResp
+   */
+  code: number
+  /**
+   *
+   * @type {string}
+   * @memberof BaseResp
+   */
+  message: string
 }
 /**
- * 
+ *
  * @export
  * @interface LoginReq
  */
 export interface LoginReq {
-    /**
-     * 
-     * @type {string}
-     * @memberof LoginReq
-     */
-    'email': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof LoginReq
-     */
-    'password': string;
+  /**
+   *
+   * @type {string}
+   * @memberof LoginReq
+   */
+  email: string
+  /**
+   *
+   * @type {string}
+   * @memberof LoginReq
+   */
+  password: string
 }
 /**
- * 
+ *
  * @export
  * @interface LoginResp
  */
 export interface LoginResp {
-    /**
-     * 
-     * @type {number}
-     * @memberof LoginResp
-     */
-    'code': number;
-    /**
-     * 
-     * @type {string}
-     * @memberof LoginResp
-     */
-    'message': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof LoginResp
-     */
-    'token': string;
+  /**
+   *
+   * @type {number}
+   * @memberof LoginResp
+   */
+  code: number
+  /**
+   *
+   * @type {string}
+   * @memberof LoginResp
+   */
+  message: string
+  /**
+   *
+   * @type {string}
+   * @memberof LoginResp
+   */
+  token: string
 }
 /**
- * 
+ *
  * @export
  * @interface RemoteListFileStatus
  */
 export interface RemoteListFileStatus {
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'created_time': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'file_extension': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'hash': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'icon_link': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'kind': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'md5_checksum': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'mime_type': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'modified_time': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'name': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'parent_id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'phase': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'size': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'thumbnail_link': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListFileStatus
-     */
-    'user_id': string;
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  created_time: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  file_extension: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  hash: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  icon_link: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  id: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  kind: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  md5_checksum: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  mime_type: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  modified_time: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  name: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  parent_id: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  phase: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  size: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  thumbnail_link: string
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListFileStatus
+   */
+  user_id: string
 }
 /**
- * 
+ *
  * @export
  * @interface RemoteListReq
  */
 export interface RemoteListReq {
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListReq
-     */
-    'path': string;
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListReq
+   */
+  path: string
 }
 /**
- * 
+ *
  * @export
  * @interface RemoteListResp
  */
 export interface RemoteListResp {
-    /**
-     * 
-     * @type {number}
-     * @memberof RemoteListResp
-     */
-    'code': number;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemoteListResp
-     */
-    'message': string;
-    /**
-     * 
-     * @type {Array<RemoteListFileStatus>}
-     * @memberof RemoteListResp
-     */
-    'files_info': Array<RemoteListFileStatus>;
+  /**
+   *
+   * @type {number}
+   * @memberof RemoteListResp
+   */
+  code: number
+  /**
+   *
+   * @type {string}
+   * @memberof RemoteListResp
+   */
+  message: string
+  /**
+   *
+   * @type {Array<RemoteListFileStatus>}
+   * @memberof RemoteListResp
+   */
+  files_info: Array<RemoteListFileStatus>
 }
 
 /**
@@ -227,85 +237,108 @@ export interface RemoteListResp {
  * @export
  */
 export const LoginApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
-        /**
-         * 
-         * @param {LoginReq} loginReq 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        login: async (loginReq: LoginReq, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'loginReq' is not null or undefined
-            assertParamExists('login', 'loginReq', loginReq)
-            const localVarPath = `/api/login`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+  return {
+    /**
+     *
+     * @param {LoginReq} loginReq
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    login: async (
+      loginReq: LoginReq,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'loginReq' is not null or undefined
+      assertParamExists('login', 'loginReq', loginReq)
+      const localVarPath = `/api/login`
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL)
+      let baseOptions
+      if (configuration) {
+        baseOptions = configuration.baseOptions
+      }
 
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options }
+      const localVarHeaderParameter = {} as any
+      const localVarQueryParameter = {} as any
 
+      localVarHeaderParameter['Content-Type'] = 'application/json'
 
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
+      setSearchParams(localVarUrlObj, localVarQueryParameter)
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {}
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers
+      }
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        loginReq,
+        localVarRequestOptions,
+        configuration
+      )
 
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(loginReq, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions
+      }
     }
-};
+  }
+}
 
 /**
  * LoginApi - functional programming interface
  * @export
  */
-export const LoginApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = LoginApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * 
-         * @param {LoginReq} loginReq 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async login(loginReq: LoginReq, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LoginResp>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.login(loginReq, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['LoginApi.login']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
+export const LoginApiFp = function (configuration?: Configuration) {
+  const localVarAxiosParamCreator = LoginApiAxiosParamCreator(configuration)
+  return {
+    /**
+     *
+     * @param {LoginReq} loginReq
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async login(
+      loginReq: LoginReq,
+      options?: RawAxiosRequestConfig
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LoginResp>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.login(loginReq, options)
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0
+      const localVarOperationServerBasePath =
+        operationServerMap['LoginApi.login']?.[localVarOperationServerIndex]?.url
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath)
     }
-};
+  }
+}
 
 /**
  * LoginApi - factory interface
  * @export
  */
-export const LoginApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = LoginApiFp(configuration)
-    return {
-        /**
-         * 
-         * @param {LoginReq} loginReq 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        login(loginReq: LoginReq, options?: any): AxiosPromise<LoginResp> {
-            return localVarFp.login(loginReq, options).then((request) => request(axios, basePath));
-        },
-    };
-};
+export const LoginApiFactory = function (
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
+) {
+  const localVarFp = LoginApiFp(configuration)
+  return {
+    /**
+     *
+     * @param {LoginReq} loginReq
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    login(loginReq: LoginReq, options?: any): AxiosPromise<LoginResp> {
+      return localVarFp.login(loginReq, options).then((request) => request(axios, basePath))
+    }
+  }
+}
 
 /**
  * LoginApi - object-oriented interface
@@ -314,109 +347,125 @@ export const LoginApiFactory = function (configuration?: Configuration, basePath
  * @extends {BaseAPI}
  */
 export class LoginApi extends BaseAPI {
-    /**
-     * 
-     * @param {LoginReq} loginReq 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LoginApi
-     */
-    public login(loginReq: LoginReq, options?: RawAxiosRequestConfig) {
-        return LoginApiFp(this.configuration).login(loginReq, options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   *
+   * @param {LoginReq} loginReq
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof LoginApi
+   */
+  public login(loginReq: LoginReq, options?: RawAxiosRequestConfig) {
+    return LoginApiFp(this.configuration)
+      .login(loginReq, options)
+      .then((request) => request(this.axios, this.basePath))
+  }
 }
-
-
 
 /**
  * RemoteListApi - axios parameter creator
  * @export
  */
 export const RemoteListApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
-        /**
-         * 
-         * @param {string} path 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        remoteList: async (path: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'path' is not null or undefined
-            assertParamExists('remoteList', 'path', path)
-            const localVarPath = `/api/remote_list`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+  return {
+    /**
+     *
+     * @param {string} path
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    remoteList: async (path: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+      // verify required parameter 'path' is not null or undefined
+      assertParamExists('remoteList', 'path', path)
+      const localVarPath = `/api/remote_list`
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL)
+      let baseOptions
+      if (configuration) {
+        baseOptions = configuration.baseOptions
+      }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+      const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options }
+      const localVarHeaderParameter = {} as any
+      const localVarQueryParameter = {} as any
 
-            // authentication jwt required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+      // authentication jwt required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (path !== undefined) {
-                localVarQueryParameter['path'] = path;
-            }
+      if (path !== undefined) {
+        localVarQueryParameter['path'] = path
+      }
 
+      setSearchParams(localVarUrlObj, localVarQueryParameter)
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {}
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers
+      }
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions
+      }
     }
-};
+  }
+}
 
 /**
  * RemoteListApi - functional programming interface
  * @export
  */
-export const RemoteListApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = RemoteListApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * 
-         * @param {string} path 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async remoteList(path: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LoginResp>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.remoteList(path, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['RemoteListApi.remoteList']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
+export const RemoteListApiFp = function (configuration?: Configuration) {
+  const localVarAxiosParamCreator = RemoteListApiAxiosParamCreator(configuration)
+  return {
+    /**
+     *
+     * @param {string} path
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async remoteList(
+      path: string,
+      options?: RawAxiosRequestConfig
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LoginResp>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.remoteList(path, options)
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0
+      const localVarOperationServerBasePath =
+        operationServerMap['RemoteListApi.remoteList']?.[localVarOperationServerIndex]?.url
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath)
     }
-};
+  }
+}
 
 /**
  * RemoteListApi - factory interface
  * @export
  */
-export const RemoteListApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = RemoteListApiFp(configuration)
-    return {
-        /**
-         * 
-         * @param {string} path 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        remoteList(path: string, options?: any): AxiosPromise<LoginResp> {
-            return localVarFp.remoteList(path, options).then((request) => request(axios, basePath));
-        },
-    };
-};
+export const RemoteListApiFactory = function (
+  configuration?: Configuration,
+  basePath?: string,
+  axios?: AxiosInstance
+) {
+  const localVarFp = RemoteListApiFp(configuration)
+  return {
+    /**
+     *
+     * @param {string} path
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    remoteList(path: string, options?: any): AxiosPromise<LoginResp> {
+      return localVarFp.remoteList(path, options).then((request) => request(axios, basePath))
+    }
+  }
+}
 
 /**
  * RemoteListApi - object-oriented interface
@@ -425,17 +474,16 @@ export const RemoteListApiFactory = function (configuration?: Configuration, bas
  * @extends {BaseAPI}
  */
 export class RemoteListApi extends BaseAPI {
-    /**
-     * 
-     * @param {string} path 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof RemoteListApi
-     */
-    public remoteList(path: string, options?: RawAxiosRequestConfig) {
-        return RemoteListApiFp(this.configuration).remoteList(path, options).then((request) => request(this.axios, this.basePath));
-    }
+  /**
+   *
+   * @param {string} path
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof RemoteListApi
+   */
+  public remoteList(path: string, options?: RawAxiosRequestConfig) {
+    return RemoteListApiFp(this.configuration)
+      .remoteList(path, options)
+      .then((request) => request(this.axios, this.basePath))
+  }
 }
-
-
-
