@@ -5,16 +5,12 @@ import { useTokenStore } from '@/stores/token'
 const client = () => {
   return new RemoteListApi(
     new Configuration({
-      basePath: useBackendUrlStore().storedUrl
+      basePath: useBackendUrlStore().storedUrl,
+      accessToken: useTokenStore().storedToken
     })
   )
 }
 
-export const remoteListApi = async () => {
-  const config = {
-    headers: {
-      Authorization: `Bearer ${useTokenStore().storedToken}`
-    }
-  }
-  return client().remoteList(config)
+export const remoteListApi = async (path: string) => {
+  return client().remoteList(path)
 }

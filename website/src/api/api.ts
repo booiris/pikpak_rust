@@ -89,6 +89,116 @@ export interface LoginResp {
 /**
  * 
  * @export
+ * @interface RemoteListFileStatus
+ */
+export interface RemoteListFileStatus {
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'created_time': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'file_extension': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'hash': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'icon_link': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'kind': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'md5_checksum': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'mime_type': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'modified_time': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'name': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'parent_id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'phase': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'size': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'thumbnail_link': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListFileStatus
+     */
+    'user_id': string;
+}
+/**
+ * 
+ * @export
+ * @interface RemoteListReq
+ */
+export interface RemoteListReq {
+    /**
+     * 
+     * @type {string}
+     * @memberof RemoteListReq
+     */
+    'path': string;
+}
+/**
+ * 
+ * @export
  * @interface RemoteListResp
  */
 export interface RemoteListResp {
@@ -104,6 +214,12 @@ export interface RemoteListResp {
      * @memberof RemoteListResp
      */
     'message': string;
+    /**
+     * 
+     * @type {Array<RemoteListFileStatus>}
+     * @memberof RemoteListResp
+     */
+    'files_info': Array<RemoteListFileStatus>;
 }
 
 /**
@@ -220,10 +336,13 @@ export const RemoteListApiAxiosParamCreator = function (configuration?: Configur
     return {
         /**
          * 
+         * @param {string} path 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        remoteList: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        remoteList: async (path: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'path' is not null or undefined
+            assertParamExists('remoteList', 'path', path)
             const localVarPath = `/api/remote_list`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -235,6 +354,14 @@ export const RemoteListApiAxiosParamCreator = function (configuration?: Configur
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication jwt required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (path !== undefined) {
+                localVarQueryParameter['path'] = path;
+            }
 
 
     
@@ -259,11 +386,12 @@ export const RemoteListApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
+         * @param {string} path 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async remoteList(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LoginResp>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.remoteList(options);
+        async remoteList(path: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LoginResp>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.remoteList(path, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['RemoteListApi.remoteList']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -280,11 +408,12 @@ export const RemoteListApiFactory = function (configuration?: Configuration, bas
     return {
         /**
          * 
+         * @param {string} path 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        remoteList(options?: any): AxiosPromise<LoginResp> {
-            return localVarFp.remoteList(options).then((request) => request(axios, basePath));
+        remoteList(path: string, options?: any): AxiosPromise<LoginResp> {
+            return localVarFp.remoteList(path, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -298,12 +427,13 @@ export const RemoteListApiFactory = function (configuration?: Configuration, bas
 export class RemoteListApi extends BaseAPI {
     /**
      * 
+     * @param {string} path 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RemoteListApi
      */
-    public remoteList(options?: RawAxiosRequestConfig) {
-        return RemoteListApiFp(this.configuration).remoteList(options).then((request) => request(this.axios, this.basePath));
+    public remoteList(path: string, options?: RawAxiosRequestConfig) {
+        return RemoteListApiFp(this.configuration).remoteList(path, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
