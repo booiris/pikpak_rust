@@ -13,10 +13,15 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
     "axios": "^1.7.2",
-    "naive-ui": "^2.38.2",
+    "date-fns": "^3.6.0",
+    "element-plus": "^2.7.3",
     "pinia": "^2.1.7",
-    "vfonts": "^0.0.3",
+    "pinia-plugin-persistedstate": "^3.2.1",
+    "pretty-bytes": "^6.1.1",
+    "unplugin-element-plus": "^0.8.0",
+    "unplugin-icons": "^0.19.0",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0",
     "xicons": "^1.0.0"

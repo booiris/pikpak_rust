@@ -3,5 +3,12 @@ import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <RouterView />
+    <RouterView />
 </template>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+}
+</style>
