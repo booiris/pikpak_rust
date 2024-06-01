@@ -3,21 +3,41 @@
         <el-image :src="icon" />
 
         <el-card shadow="always">
-            <el-form ref="formRef" :model="formValue" :rules="rules" label-width="auto" class="login-form"
-                v-loading="loadingRef" label-position="top" hide-required-asterisk>
+            <el-form
+                ref="formRef"
+                :model="formValue"
+                :rules="rules"
+                label-width="auto"
+                class="login-form"
+                v-loading="loadingRef"
+                label-position="top"
+                hide-required-asterisk
+            >
                 <el-text> PikPak Rust </el-text>
 
                 <el-form-item label="Email" prop="email">
-                    <el-input v-model="formValue.email" type="email" placeholder="xxxx@xxxx"
-                        autocomplete="email"></el-input>
+                    <el-input
+                        v-model="formValue.email"
+                        type="email"
+                        placeholder="xxxx@xxxx"
+                        autocomplete="email"
+                    ></el-input>
                 </el-form-item>
                 <el-form-item label="Password" prop="password">
-                    <el-input type="password" v-model="formValue.password" placeholder="******************"
-                        show-password></el-input>
+                    <el-input
+                        type="password"
+                        v-model="formValue.password"
+                        placeholder="******************"
+                        show-password
+                    ></el-input>
                 </el-form-item>
                 <el-form-item label="Backend Addr" prop="url">
-                    <el-input v-model="formValue.url" type="text" :placeholder="defaultUrl"
-                        autocomplete="on"></el-input>
+                    <el-input
+                        v-model="formValue.url"
+                        type="text"
+                        :placeholder="defaultUrl"
+                        autocomplete="on"
+                    ></el-input>
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="login(formRef)">Login</el-button>
@@ -41,7 +61,7 @@ import { parseApiError } from '@/utils/handle_error'
 const defaultUrl = `http(s)://${window.location.hostname}:22522`
 const backendStoreUrl = useBackendUrlStore()
 function urlValue(): string {
-    if (backendStoreUrl.storedUrl != "") {
+    if (backendStoreUrl.storedUrl != '') {
         return backendStoreUrl.storedUrl
     } else {
         return `http://${window.location.hostname}:22522`
@@ -114,7 +134,8 @@ const login = async (formEl: FormInstance | undefined) => {
             useTokenStore().setToken(data.data.token)
             ElMessage({
                 message: 'Login success',
-                type: 'success'
+                type: 'success',
+                duration: 2000
             })
 
             router.push('/main')

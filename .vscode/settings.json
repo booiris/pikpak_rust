@@ -26,11 +26,13 @@
         "nocheck",
         "openapi",
         "openapitools",
+        "Persistedstate",
         "pikcloud",
         "pikpak",
         "pinia",
         "reqwest",
         "rushstack",
+        "submain",
         "thiserror",
         "tsbuildinfo",
         "ttps",
@@ -43,7 +45,7 @@
     "resmon.show.mem": true,
     "resmon.show.disk": false,
     "editor.codeActionsOnSave": {
-        "source.fixAll": "explicit"
+        "source.fixAll.eslint": "never"
     },
     "editor.formatOnSave": true,
     "[typescript]": {
@@ -81,4 +83,5 @@
         ".vscode-insiders",
         "**/consts.rs"
     ],
+    // "typescript.disableAutomaticTypeAcquisition": true,
 }

@@ -6,7 +6,10 @@ use axum::{
 };
 use log::{error, info};
 use pikpak_core::{PkiPakApiClient, PkiPakApiConfig};
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::{
+    catch_panic::CatchPanicLayer,
+    cors::{Any, CorsLayer},
+};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -42,7 +45,8 @@ pub async fn start_server(
                 .route("/remote_list", get(remote_list)),
         )
         .merge(SwaggerUi::new("/doc").url("/openapi.json", ApiDoc::openapi()))
-        .layer(cors);
+        .layer(cors)
+        .layer(CatchPanicLayer::new());
 
     let addr = host.into() + ":" + port.into();
     let listener = tokio::net::TcpListener::bind(&addr)

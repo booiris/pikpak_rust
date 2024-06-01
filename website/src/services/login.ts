@@ -8,5 +8,7 @@ const client = () => {
 
 export const loginApi = async (email: string, password: string) => {
     const req = { email, password } as LoginReq
-    return client().login(req)
+    return client().login(req, {
+        timeout: 4000
+    })
 }

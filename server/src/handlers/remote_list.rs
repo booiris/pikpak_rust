@@ -71,7 +71,7 @@ impl From<FileStatus> for RemoteListFileStatus {
         ("jwt"=[])
     ),
     responses(
-        (status = 200, description = "success, return remote list file", body = LoginResp),
+        (status = 200, description = "success, return remote list file", body = RemoteListResp),
         (status = 400, description = "request invalid", body = BaseResp)
     )
 )]

@@ -18,8 +18,11 @@
                 <el-aside class="main-aside" width="200px"
                     style="border: 1px solid grey; height: 700px">Aside</el-aside>
                 <el-main class="main-main">
-                    <el-table :data="tableData" style="width: 100%">
-                        <el-table-column prop="fileName" label="Name" width="500" />
+                    <div v-if="tableLoading">
+                        <el-skeleton :rows="8" animated :loading="tableLoading" />
+                    </div>
+                    <el-table v-else :data="tableData" style="width: 100%" :cell-style="cellStyle">
+                        <el-table-column prop="fileName" label="Name" width="500" style="color: red;" />
                         <el-table-column prop="size" label="Size" width="180" />
                         <el-table-column prop="updateTime" label="Update Time" />
                     </el-table>
@@ -35,7 +38,7 @@ import { remoteListApi } from '@/services/remote_list'
 import { parseApiError } from '@/utils/handle_error'
 import type { AxiosError } from 'axios'
 import { ElMessage } from 'element-plus'
-import { onMounted, reactive } from 'vue'
+import { onMounted, reactive, ref, type CSSProperties } from 'vue'
 import { parseISO, format } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
 
@@ -43,12 +46,14 @@ interface tableDataType {
     fileName: string
     size: string
     updateTime: string
+    kind: string
 }
 
-const tableData = reactive<Array<tableDataType>>([])
+const tableData = reactive<tableDataType[]>([])
+const tableLoading = ref(true)
 
-onMounted(async () => {
-    const data = await remoteListApi('/').catch((err: AxiosError) => {
+async function get_file_status(path: string): Promise<tableDataType[]> {
+    const data = await remoteListApi(path).catch((err: AxiosError) => {
         console.error(err)
         let error = parseApiError(err)
         ElMessage.error({
@@ -57,23 +62,43 @@ onMounted(async () => {
             duration: 5000
         })
     })
+    tableLoading.value = false
     if (!data) {
-        return
+        return []
     }
     console.log(data)
+    let tempData = []
     for (let file_status of data.data.files_info) {
         const date = parseISO(file_status.modified_time);
         let size = "-"
         if (file_status.kind != "drive#folder") {
             size = prettyBytes(Number(file_status.size))
         }
-        tableData.push({
+        tempData.push({
             fileName: file_status.name,
             size: size,
-            updateTime: format(date, 'yyyy-MM-dd HH:mm')
+            updateTime: format(date, 'yyyy-MM-dd HH:mm'),
+            kind: file_status.kind,
         })
     }
+    return tempData
+}
+
+function cellStyle({ row, columnIndex }: { row: tableDataType, column: any, rowIndex: number, columnIndex: number }): CSSProperties {
+    if (row.kind == "drive#folder" && columnIndex == 0) {
+        return {
+            color: "#409EFF"
+        }
+    } else {
+        return {}
+    }
+}
+
+onMounted(async () => {
+    let tempData = await get_file_status('/')
+    tableData.splice(0, tableData.length, ...tempData)
 })
+
 </script>
 
 <style scoped>
