@@ -87,7 +87,8 @@ impl ApiClient<'_> {
     ) -> Result<Vec<FileStatus>, Error> {
         let mut query = AHashMap::from([
             ("thumbnail_size", "SIZE_MEDIUM".into()),
-            ("limit", "100".into()),
+            // seems that api does not support offset and limit
+            ("limit", "500".into()),
             ("parent_id", folder_id.to_owned()),
             ("with_audit", "false".into()),
             ("filters", r#"{"trashed":{"eq":false}}"#.into()),

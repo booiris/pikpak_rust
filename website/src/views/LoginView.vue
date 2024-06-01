@@ -70,8 +70,8 @@ function urlValue(): string {
 
 const formRef = ref<FormInstance>()
 const formValue = reactive({
-    email: '',
-    password: '',
+    email: import.meta.env.VITE_USERNAME,
+    password: import.meta.env.VITE_PASSWORD,
     url: urlValue()
 })
 
@@ -138,7 +138,9 @@ const login = async (formEl: FormInstance | undefined) => {
                 duration: 2000
             })
 
-            router.push('/main')
+            router.push({
+                name: 'file_list'
+            })
         } catch (e) {
             console.error('Login failed:', e)
 

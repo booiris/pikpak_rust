@@ -11,6 +11,9 @@ importers:
       '@element-plus/icons-vue':
         specifier: ^2.3.1
         version: 2.3.1(vue@3.4.27(typescript@5.4.5))
+      '@types/lodash':
+        specifier: ^4.17.4
+        version: 4.17.4
       axios:
         specifier: ^1.7.2
         version: 1.7.2
@@ -20,6 +23,9 @@ importers:
       element-plus:
         specifier: ^2.7.3
         version: 2.7.3(vue@3.4.27(typescript@5.4.5))
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       pinia:
         specifier: ^2.1.7
         version: 2.1.7(typescript@5.4.5)(vue@3.4.27(typescript@5.4.5))
@@ -41,9 +47,6 @@ importers:
       vue-router:
         specifier: ^4.3.0
         version: 4.3.2(vue@3.4.27(typescript@5.4.5))
-      xicons:
-        specifier: ^1.0.0
-        version: 1.0.0
     devDependencies:
       '@openapitools/openapi-generator-cli':
         specifier: ^2.13.4
@@ -2334,9 +2337,6 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
-
-  xicons@1.0.0:
-    resolution: {integrity: sha512-LIEQPAEQA55vRXXZym5RWtO20JC1/nGz02Jvcf2ufT21H2KTGAr8I4zEcoZM/2ADafkYPLROjZw6cKF5mO8Ckw==}
 
   xml-name-validator@4.0.0:
     resolution: {integrity: sha512-ICP2e+jsHvAj2E2lIHxa5tjXRlKDJo4IdvPvCXbXQGdzSfmSpNVyIKMvoZHjDY9DP0zV17iI85o90vRFXNccRw==}
@@ -4637,8 +4637,6 @@ snapshots:
   wrappy@1.0.2: {}
 
   ws@7.5.9: {}
-
-  xicons@1.0.0: {}
 
   xml-name-validator@4.0.0: {}
 

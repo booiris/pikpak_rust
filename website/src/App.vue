@@ -12,11 +12,12 @@
 body {
     margin: 0;
     overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.4s;
+    transition: opacity 0.3s;
 }
 .fade-enter-from,
 .fade-leave-to {
