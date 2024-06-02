@@ -78,7 +78,7 @@ impl<
             persistence_interval: persistence_interval.unwrap_or(Duration::from_secs(60)),
             cancel: None,
         };
-        x.persistence();
+        x.run_back_task();
         x
     }
 
@@ -144,11 +144,7 @@ impl<
         }
     }
 
-    fn persistence(&mut self) {
-        if self.persistence_file.is_none() {
-            return;
-        }
-
+    fn run_back_task(&mut self) {
         let (tx, mut rx) = mpsc::channel::<()>(1);
         self.cancel = Some(tx);
 
@@ -167,6 +163,10 @@ impl<
                 let mut cloned_data = {
                     let mut data = data.lock();
                     data.retain(|_, v| v.expire_at > Utc::now());
+
+                    if persistence_file.is_none() {
+                        continue;
+                    }
 
                     let cloned_data = data
                         .iter()
@@ -197,7 +197,7 @@ impl<
                     }
                 }
             }
-            log::info!("Persistence task canceled");
+            log::info!("back task canceled");
         });
     }
 }
