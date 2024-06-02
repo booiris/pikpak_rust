@@ -22,6 +22,14 @@ impl PikPakFileIdCache {
     pub fn get(&self, key: &String, decrypt_key: &str) -> Arc<Mutex<PikPakFileIdCacheElement>> {
         self.0.get(key, decrypt_key)
     }
+
+    pub fn get_checked(
+        &self,
+        key: &String,
+        decrypt_key: &str,
+    ) -> Option<Arc<Mutex<PikPakFileIdCacheElement>>> {
+        self.0.get_checked(key, decrypt_key)
+    }
 }
 
 impl ReadFromFile for PikPakFileIdCache {

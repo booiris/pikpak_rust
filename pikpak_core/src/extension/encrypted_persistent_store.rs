@@ -82,6 +82,32 @@ impl<
         x
     }
 
+    pub fn get_checked(&self, key: &K, decrypt_key: &str) -> Option<Arc<Mutex<V>>> {
+        let mut data = self.data.lock();
+        let elem = match data.get_mut(key) {
+            Some(elem) => elem,
+            None => return None,
+        };
+
+        elem.expire_at = Utc::now() + self.refresh_time;
+
+        match &mut elem.data {
+            MemoryElem::Encrypted(encrypted_data) => {
+                let data = match decrypt::<V>(encrypted_data, decrypt_key.as_bytes()) {
+                    Ok(d) => d,
+                    Err(_) => return None,
+                };
+                let data = Arc::new(Mutex::new(data));
+                elem.data = MemoryElem::Decrypted {
+                    key: decrypt_key.as_bytes().to_vec(),
+                    data: data.clone(),
+                };
+                Some(data)
+            }
+            MemoryElem::Decrypted { key: _, data } => Some(data.clone()),
+        }
+    }
+
     pub fn get(&self, key: &K, decrypt_key: &str) -> Arc<Mutex<V>> {
         let mut data = self.data.lock();
         let elem = match data.get_mut(key) {
@@ -106,7 +132,7 @@ impl<
 
         match &mut elem.data {
             MemoryElem::Encrypted(encrypted_data) => {
-                let data = decrypt::<V>(encrypted_data, decrypt_key.as_bytes());
+                let data = decrypt::<V>(encrypted_data, decrypt_key.as_bytes()).unwrap_or_default();
                 let data = Arc::new(Mutex::new(data));
                 elem.data = MemoryElem::Decrypted {
                     key: decrypt_key.as_bytes().to_vec(),
@@ -195,13 +221,13 @@ impl NonceSequence for &mut NonceSeq {
     }
 }
 
-fn decrypt<T: Default + DeserializeOwned>(data: &mut [u8], key: &[u8]) -> T {
+fn decrypt<T: Default + DeserializeOwned>(data: &mut [u8], key: &[u8]) -> Result<T, ()> {
     let key = digest::digest(&digest::SHA256, key);
     let unbound_key = match aead::UnboundKey::new(&aead::AES_256_GCM, key.as_ref()) {
         Ok(k) => k,
         Err(e) => {
             log::error!("[decrypt] Failed to create unbound key: {}", e);
-            return T::default();
+            return Err(());
         }
     };
 
@@ -211,13 +237,13 @@ fn decrypt<T: Default + DeserializeOwned>(data: &mut [u8], key: &[u8]) -> T {
         Ok(d) => d.to_vec(),
         Err(e) => {
             log::error!("[decrypt] Failed to decrypt data: {}", e);
-            return T::default();
+            return Err(());
         }
     };
 
-    match bincode::deserialize(&data) {
-        Ok(d) => d,
-        Err(_) => T::default(),
+    match bincode::deserialize::<T>(&data) {
+        Ok(d) => Ok(d),
+        Err(_) => Err(()),
     }
 }
 
@@ -287,6 +313,11 @@ mod test {
             let d = data.get(&"test1".to_string(), "asd");
             let mut d = d.lock();
             d.a = 3;
+        }
+
+        {
+            let d = data.get_checked(&"test3".to_string(), "ssss");
+            assert!(d.is_none());
         }
 
         println!("{:?}", data.data.lock());

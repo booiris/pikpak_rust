@@ -29,14 +29,17 @@ impl PkiPakApiClient {
             .inner
             .store
             .pikpak_file_id_cache
-            .get(&req.ident.username, &req.ident.password);
-        let folder_id = path_id_cache.lock().file_id_map.get(&req.path).cloned();
+            .get_checked(&req.ident.username, &req.ident.password);
+        let folder_id = path_id_cache.and_then(|x| x.lock().file_id_map.get(&req.path).cloned());
 
         let folder_id = if let Some(path_id) = folder_id {
             path_id
         } else {
             let folder_id = api.get_path_id(&req.path).await?;
-            path_id_cache
+            self.inner
+                .store
+                .pikpak_file_id_cache
+                .get(&req.ident.username, &req.ident.password)
                 .lock()
                 .file_id_map
                 .insert(req.path.clone(), folder_id.clone());
