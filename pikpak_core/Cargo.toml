@@ -9,7 +9,7 @@ license.workspace = true
 tokio = { workspace = true }
 log = { workspace = true }
 reqwest = { workspace = true }
-serde = { workspace = true }
+serde = { workspace = true, features = ["rc"] }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 rand = { workspace = true }
@@ -17,10 +17,12 @@ md5 = { workspace = true }
 chrono = { workspace = true }
 oauth2 = { workspace = true }
 anyhow = { workspace = true }
-parking_lot = { workspace = true }
+parking_lot = { workspace = true, features = ["serde"] }
 ahash = { workspace = true }
 lazy_static = { workspace = true }
 path-clean = { workspace = true }
+bincode = { workspace = true }
+ring = { workspace = true }
 
 [dev-dependencies]
 env_logger = { workspace = true }

@@ -13,7 +13,7 @@ pub struct GetFolderResp {
     pub files: Vec<Value>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum FileIDType {
     #[serde(rename = "drive#file")]
     File(String),

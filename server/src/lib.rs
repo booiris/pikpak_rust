@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use anyhow::{anyhow, Context, Error};
 use axum::{
     http::Method,
@@ -23,9 +25,13 @@ pub async fn start_server(
     host: impl Into<String>,
     port: impl Into<&str>,
     proxy: Option<String>,
+    cache_dir: Option<PathBuf>,
 ) -> Result<(), Error> {
     PIKPAK_CORE_CLIENT
-        .set(PkiPakApiClient::new(Some(PkiPakApiConfig { proxy })))
+        .set(PkiPakApiClient::new(Some(PkiPakApiConfig {
+            proxy,
+            cache_dir,
+        })))
         .map_err(|_| {
             error!("[rust pikpak server] set pikpak core client error");
             anyhow!("set pikpak core client error")

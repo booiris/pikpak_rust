@@ -1,20 +1,23 @@
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
 use consts::*;
 use oauth2::{basic::BasicClient, AuthUrl, ClientId, ClientSecret, TokenUrl};
 use rand::{distributions::Alphanumeric, Rng};
 use reqwest::{header, Client};
+use store::Store;
 
 pub mod api;
 mod consts;
 pub mod core;
 pub mod error;
 pub mod extension;
+mod store;
 mod utils;
 
 #[derive(Clone, Debug, Default)]
 pub struct PkiPakApiConfig {
     pub proxy: Option<String>,
+    pub cache_dir: Option<PathBuf>,
 }
 
 #[derive(Clone)]
@@ -34,6 +37,7 @@ pub(crate) struct PkiPakApiClientInner {
     pub client: Client,
     pub oauth2_client: BasicClient,
     pub device_id: String,
+    pub store: Store,
 }
 
 impl PkiPakApiClientInner {
@@ -53,7 +57,7 @@ impl PkiPakApiClientInner {
 
         let mut client_builder: reqwest::ClientBuilder =
             reqwest::Client::builder().default_headers(headers);
-        if let Some(proxy) = conf.and_then(|c| c.proxy) {
+        if let Some(proxy) = conf.as_ref().and_then(|c| c.proxy.as_ref()) {
             client_builder =
                 client_builder.proxy(reqwest::Proxy::all(proxy).expect("proxy format is invalid"));
         }
@@ -70,6 +74,7 @@ impl PkiPakApiClientInner {
             client,
             oauth2_client,
             device_id,
+            store: Store::new(conf.and_then(|c| c.cache_dir)),
         }
     }
 }

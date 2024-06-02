@@ -24,7 +24,25 @@ impl PkiPakApiClient {
         option: Option<ApiOption>,
     ) -> Result<ApiRemoteListResp, Error> {
         let api = self.api(&req.ident, &option);
-        let folder_id = api.get_path_id(&req.path).await?;
+
+        let path_id_cache = self
+            .inner
+            .store
+            .pikpak_file_id_cache
+            .get(&req.ident.username, &req.ident.password);
+        let folder_id = path_id_cache.lock().file_id_map.get(&req.path).cloned();
+
+        let folder_id = if let Some(path_id) = folder_id {
+            path_id
+        } else {
+            let folder_id = api.get_path_id(&req.path).await?;
+            path_id_cache
+                .lock()
+                .file_id_map
+                .insert(req.path.clone(), folder_id.clone());
+            folder_id
+        };
+
         let infos = api
             .get_file_status_list_by_folder_id(folder_id.get_id())
             .await?;
