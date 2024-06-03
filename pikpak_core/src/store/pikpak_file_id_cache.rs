@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ahash::HashMap;
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -19,7 +19,7 @@ pub struct PikPakFileIdCacheElement {
 }
 
 impl PikPakFileIdCache {
-    pub fn get(&self, key: &String, decrypt_key: &str) -> Arc<Mutex<PikPakFileIdCacheElement>> {
+    pub fn get(&self, key: &String, decrypt_key: &str) -> Arc<RwLock<PikPakFileIdCacheElement>> {
         self.0.get(key, decrypt_key)
     }
 
@@ -27,7 +27,7 @@ impl PikPakFileIdCache {
         &self,
         key: &String,
         decrypt_key: &str,
-    ) -> Option<Arc<Mutex<PikPakFileIdCacheElement>>> {
+    ) -> Option<Arc<RwLock<PikPakFileIdCacheElement>>> {
         self.0.get_checked(key, decrypt_key)
     }
 }

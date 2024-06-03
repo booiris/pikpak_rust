@@ -31,6 +31,33 @@ impl FileIDType {
 }
 
 impl ApiClient<'_> {
+    pub(crate) async fn get_path_id_use_cache(&self, path: &str) -> Result<FileIDType, Error> {
+        let path_id_cache = self
+            .client
+            .inner
+            .store
+            .pikpak_file_id_cache
+            .get_checked(&self.ident.username, &self.ident.password);
+        let folder_id = path_id_cache.and_then(|x| x.read().file_id_map.get(path).cloned());
+
+        let folder_id = if let Some(path_id) = folder_id {
+            path_id
+        } else {
+            let folder_id = self.get_path_id(path).await?;
+            self.client
+                .inner
+                .store
+                .pikpak_file_id_cache
+                .get(&self.ident.username, &self.ident.password)
+                .write()
+                .file_id_map
+                .insert(path.to_string(), folder_id.clone());
+            folder_id
+        };
+
+        Ok(folder_id)
+    }
+
     pub(crate) async fn get_path_id(&self, path: &str) -> Result<FileIDType, Error> {
         self.get_deep_folder_id(FileIDType::Folder("".into()), path)
             .await

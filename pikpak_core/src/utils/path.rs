@@ -12,3 +12,21 @@ pub fn slash(path: &str) -> Result<String> {
     }
     Ok(path.to_string())
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_slash() {
+        assert_eq!(slash("/").unwrap(), "");
+        assert_eq!(slash("/a").unwrap(), "a");
+        assert_eq!(slash("a").unwrap(), "a");
+        assert_eq!(slash("a/").unwrap(), "a");
+        assert_eq!(slash("/a/").unwrap(), "a");
+        assert_eq!(slash("/a/b").unwrap(), "a/b");
+        assert_eq!(slash("a/b").unwrap(), "a/b");
+        assert_eq!(slash("a/b/").unwrap(), "a/b");
+        assert_eq!(slash("/a/b/").unwrap(), "a/b");
+    }
+}

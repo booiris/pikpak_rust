@@ -8,6 +8,7 @@ use ahash::HashMap;
 use chrono::DateTime;
 use chrono::Utc;
 use parking_lot::Mutex;
+use parking_lot::RwLock;
 use ring::aead::Aad;
 use ring::{
     aead::{self, BoundKey, Nonce, NonceSequence, NONCE_LEN},
@@ -22,7 +23,7 @@ use tokio::sync::mpsc;
 
 pub enum MemoryElem<T> {
     Encrypted(Vec<u8>),
-    Decrypted { key: Vec<u8>, data: Arc<Mutex<T>> },
+    Decrypted { key: Vec<u8>, data: Arc<RwLock<T>> },
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -42,7 +43,7 @@ pub struct EncryptedPersistentMemory<K, V> {
 
 impl<
         K: Hash + Eq + PartialEq + Send + 'static + Serialize + Clone + DeserializeOwned + Debug,
-        V: Default + DeserializeOwned + Send + 'static + Serialize + Clone + Debug,
+        V: Default + DeserializeOwned + Send + 'static + Serialize + Clone + Debug + Sync,
     > EncryptedPersistentMemory<K, V>
 {
     pub fn new(
@@ -82,7 +83,7 @@ impl<
         x
     }
 
-    pub fn get_checked(&self, key: &K, decrypt_key: &str) -> Option<Arc<Mutex<V>>> {
+    pub fn get_checked(&self, key: &K, decrypt_key: &str) -> Option<Arc<RwLock<V>>> {
         let mut data = self.data.lock();
         let elem = match data.get_mut(key) {
             Some(elem) => elem,
@@ -97,7 +98,7 @@ impl<
                     Ok(d) => d,
                     Err(_) => return None,
                 };
-                let data = Arc::new(Mutex::new(data));
+                let data = Arc::new(RwLock::new(data));
                 elem.data = MemoryElem::Decrypted {
                     key: decrypt_key.as_bytes().to_vec(),
                     data: data.clone(),
@@ -108,12 +109,12 @@ impl<
         }
     }
 
-    pub fn get(&self, key: &K, decrypt_key: &str) -> Arc<Mutex<V>> {
+    pub fn get(&self, key: &K, decrypt_key: &str) -> Arc<RwLock<V>> {
         let mut data = self.data.lock();
         let elem = match data.get_mut(key) {
             Some(elem) => elem,
             None => {
-                let d = Arc::new(Mutex::new(V::default()));
+                let d = Arc::new(RwLock::new(V::default()));
                 data.insert(
                     key.clone(),
                     EncryptedPersistentMemoryElem {
@@ -133,7 +134,7 @@ impl<
         match &mut elem.data {
             MemoryElem::Encrypted(encrypted_data) => {
                 let data = decrypt::<V>(encrypted_data, decrypt_key.as_bytes()).unwrap_or_default();
-                let data = Arc::new(Mutex::new(data));
+                let data = Arc::new(RwLock::new(data));
                 elem.data = MemoryElem::Decrypted {
                     key: decrypt_key.as_bytes().to_vec(),
                     data: data.clone(),
@@ -178,7 +179,7 @@ impl<
                 for v in cloned_data.values_mut() {
                     if let MemoryElem::Decrypted { ref key, ref data } = v.data {
                         let data = data.clone();
-                        let data = data.lock();
+                        let data = data.read();
                         let encrypted_data = encrypt(&*data, key);
                         if encrypted_data.is_empty() {
                             v.expire_at = chrono::DateTime::default();
@@ -297,21 +298,22 @@ mod test {
 
         {
             let d = data.get(&"test1".to_string(), "asd");
-            let mut d = d.lock();
+            let mut d: parking_lot::lock_api::RwLockWriteGuard<parking_lot::RawRwLock, TestData> =
+                d.write();
             d.a = 1;
             d.b = "hello".to_string();
         }
 
         {
             let d = data.get(&"test2".to_string(), "cccc");
-            let mut d = d.lock();
+            let mut d = d.write();
             d.a = 2;
             d.b = "world".to_string();
         }
 
         {
             let d = data.get(&"test1".to_string(), "asd");
-            let mut d = d.lock();
+            let mut d = d.write();
             d.a = 3;
         }
 
@@ -339,7 +341,7 @@ mod test {
 
         {
             let d = data.get(&"test1".to_string(), "asd");
-            let d = d.lock();
+            let d = d.read();
 
             println!("{:?}", d);
 
@@ -349,7 +351,7 @@ mod test {
 
         {
             let d = data.get(&"test2".to_string(), "cccc");
-            let d = d.lock();
+            let d = d.read();
             assert_eq!(d.a, 2);
             assert_eq!(d.b, "world");
         }

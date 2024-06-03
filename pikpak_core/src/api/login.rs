@@ -4,17 +4,16 @@ use log::{error, trace};
 use oauth2::{
     reqwest::async_http_client, ResourceOwnerPassword, ResourceOwnerUsername, TokenResponse,
 };
-use serde::{Deserialize, Serialize};
 
 use crate::{api::Ident, core::token::AUTH_TOKEN, error::Error, PkiPakApiClient};
 
-#[derive(Default, Debug, Serialize, Deserialize)]
+#[derive(Default, Debug)]
 pub struct ApiLoginReq {
     pub username: String,
     pub password: String,
 }
 
-#[derive(Default, Debug, Serialize, Deserialize, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct AuthTokenType {
     pub access_token: String,
     pub refresh_token: Option<String>,

@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+pub mod download;
 pub mod login;
 pub mod remote_list;
 
