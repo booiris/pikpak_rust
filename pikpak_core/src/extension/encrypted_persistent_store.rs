@@ -5,9 +5,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use ahash::HashMap;
-use chrono::DateTime;
 use chrono::Utc;
-use parking_lot::Mutex;
 use parking_lot::RwLock;
 use ring::aead::Aad;
 use ring::{
@@ -19,23 +17,21 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
 
+use super::auto_recycle_store::AutoRecycleStore;
+use super::auto_recycle_store::IntoAutoRecycleStoreElem;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 
 pub enum MemoryElem<T> {
     Encrypted(Vec<u8>),
     Decrypted { key: Vec<u8>, data: Arc<RwLock<T>> },
 }
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct EncryptedPersistentMemoryElem<T> {
-    data: MemoryElem<T>,
-    expire_at: DateTime<Utc>,
-}
-
 #[derive(Debug)]
-pub struct EncryptedPersistentMemory<K, V> {
-    data: Arc<Mutex<HashMap<K, EncryptedPersistentMemoryElem<V>>>>,
-    refresh_time: Duration,
+pub struct EncryptedPersistentMemory<
+    K: Hash + Eq + PartialEq + Send + 'static + Serialize + Clone + DeserializeOwned + Debug,
+    V: Default + DeserializeOwned + Send + 'static + Serialize + Clone + Debug + Sync,
+> {
+    data: AutoRecycleStore<K, MemoryElem<V>>,
     persistence_interval: Duration,
     persistence_file: Option<PathBuf>,
     cancel: Option<mpsc::Sender<()>>,
@@ -49,7 +45,6 @@ impl<
     pub fn new(
         origin_file: Option<PathBuf>,
         persistence_file: Option<PathBuf>,
-        refresh_time: Option<Duration>,
         persistence_interval: Option<Duration>,
     ) -> Self {
         let data = origin_file
@@ -73,33 +68,30 @@ impl<
             .unwrap_or_default();
 
         let mut x = Self {
-            data: Arc::new(Mutex::new(data)),
+            data: AutoRecycleStore::new(data),
             persistence_file,
-            refresh_time: refresh_time.unwrap_or(Duration::from_secs(60 * 60 * 24 * 30)),
             persistence_interval: persistence_interval.unwrap_or(Duration::from_secs(60)),
             cancel: None,
         };
-        x.run_back_task();
+        x.persistence();
         x
     }
 
     pub fn get_checked(&self, key: &K, decrypt_key: &str) -> Option<Arc<RwLock<V>>> {
-        let mut data = self.data.lock();
+        let mut data = self.data.refresh(key);
         let elem = match data.get_mut(key) {
-            Some(elem) => elem,
+            Some(elem) => &mut elem.data,
             None => return None,
         };
 
-        elem.expire_at = Utc::now() + self.refresh_time;
-
-        match &mut elem.data {
+        match elem {
             MemoryElem::Encrypted(encrypted_data) => {
                 let data = match decrypt::<V>(encrypted_data, decrypt_key.as_bytes()) {
                     Ok(d) => d,
                     Err(_) => return None,
                 };
                 let data = Arc::new(RwLock::new(data));
-                elem.data = MemoryElem::Decrypted {
+                *elem = MemoryElem::Decrypted {
                     key: decrypt_key.as_bytes().to_vec(),
                     data: data.clone(),
                 };
@@ -110,26 +102,22 @@ impl<
     }
 
     pub fn get(&self, key: &K, decrypt_key: &str) -> Arc<RwLock<V>> {
-        let mut data = self.data.lock();
+        let mut data = self.data.refresh(key);
         let elem = match data.get_mut(key) {
             Some(elem) => elem,
             None => {
                 let d = Arc::new(RwLock::new(V::default()));
                 data.insert(
                     key.clone(),
-                    EncryptedPersistentMemoryElem {
-                        data: MemoryElem::Decrypted {
-                            key: decrypt_key.as_bytes().to_vec(),
-                            data: d.clone(),
-                        },
-                        expire_at: Utc::now() + self.refresh_time,
-                    },
+                    MemoryElem::Decrypted {
+                        key: decrypt_key.as_bytes().to_vec(),
+                        data: d.clone(),
+                    }
+                    .into_elem(None),
                 );
                 return d;
             }
         };
-
-        elem.expire_at = Utc::now() + self.refresh_time;
 
         match &mut elem.data {
             MemoryElem::Encrypted(encrypted_data) => {
@@ -145,7 +133,11 @@ impl<
         }
     }
 
-    fn run_back_task(&mut self) {
+    fn persistence(&mut self) {
+        if self.persistence_file.is_none() {
+            return;
+        }
+
         let (tx, mut rx) = mpsc::channel::<()>(1);
         self.cancel = Some(tx);
 
@@ -161,20 +153,11 @@ impl<
                     _ = tokio::time::sleep(persistence_interval) => {}
                 }
 
-                let mut cloned_data = {
-                    let mut data = data.lock();
-                    data.retain(|_, v| v.expire_at > Utc::now());
-
-                    if persistence_file.is_none() {
-                        continue;
-                    }
-
-                    let cloned_data = data
-                        .iter()
-                        .map(|(k, v)| (k.clone(), v.clone()))
-                        .collect::<HashMap<_, _>>();
-                    cloned_data
-                };
+                let mut cloned_data = data
+                    .lock()
+                    .iter()
+                    .map(|(k, v)| (k.clone(), v.clone()))
+                    .collect::<HashMap<_, _>>();
 
                 for v in cloned_data.values_mut() {
                     if let MemoryElem::Decrypted { ref key, ref data } = v.data {
@@ -182,13 +165,13 @@ impl<
                         let data = data.read();
                         let encrypted_data = encrypt(&*data, key);
                         if encrypted_data.is_empty() {
-                            v.expire_at = chrono::DateTime::default();
+                            v.recycle_at = chrono::DateTime::default();
                             continue;
                         }
                         v.data = MemoryElem::Encrypted(encrypted_data);
                     }
                 }
-                cloned_data.retain(|_, v| v.expire_at > Utc::now());
+                cloned_data.retain(|_, v| v.recycle_at > Utc::now());
 
                 if let Ok(data) = bincode::serialize(&cloned_data) {
                     if let Err(e) =
@@ -203,7 +186,11 @@ impl<
     }
 }
 
-impl<T, U> Drop for EncryptedPersistentMemory<T, U> {
+impl<
+        K: Hash + Eq + PartialEq + Send + 'static + Serialize + Clone + DeserializeOwned + Debug,
+        V: Default + DeserializeOwned + Send + 'static + Serialize + Clone + Debug + Sync,
+    > Drop for EncryptedPersistentMemory<K, V>
+{
     fn drop(&mut self) {
         if let Some(cancel) = self.cancel.take() {
             tokio::spawn(async move {
@@ -292,7 +279,6 @@ mod test {
         let data = EncryptedPersistentMemory::<String, TestData>::new(
             None,
             Some(PathBuf::from("cache/test.bin")),
-            None,
             Some(Duration::from_secs(3)),
         );
 
@@ -332,7 +318,6 @@ mod test {
 
         let data = EncryptedPersistentMemory::<String, TestData>::new(
             Some(PathBuf::from("cache/test.bin")),
-            None,
             None,
             None,
         );

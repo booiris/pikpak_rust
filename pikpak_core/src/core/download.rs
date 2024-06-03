@@ -8,7 +8,7 @@ use crate::error::Error;
 use super::ApiClient;
 
 impl ApiClient<'_> {
-    pub async fn download(&self, path: &str, output_dir: &Path) -> Result<(), Error> {
+    pub async fn download(&self, path: &String, output_dir: &Path) -> Result<(), Error> {
         let path_id = self.get_path_id_use_cache(path).await?;
 
         match path_id {

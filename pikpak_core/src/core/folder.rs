@@ -4,7 +4,9 @@ use reqwest::header::HeaderMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::{error::Error, utils::path::slash};
+use crate::{
+    error::Error, extension::auto_recycle_store::IntoAutoRecycleStoreElem, utils::path::slash,
+};
 
 use super::ApiClient;
 
@@ -31,14 +33,20 @@ impl FileIDType {
 }
 
 impl ApiClient<'_> {
-    pub(crate) async fn get_path_id_use_cache(&self, path: &str) -> Result<FileIDType, Error> {
+    pub(crate) async fn get_path_id_use_cache(&self, path: &String) -> Result<FileIDType, Error> {
         let path_id_cache = self
             .client
             .inner
             .store
             .pikpak_file_id_cache
             .get_checked(&self.ident.username, &self.ident.password);
-        let folder_id = path_id_cache.and_then(|x| x.read().file_id_map.get(path).cloned());
+        let folder_id = path_id_cache.and_then(|x| {
+            x.read()
+                .file_id_map
+                .refresh(path)
+                .get(path)
+                .map(|x| x.data.clone())
+        });
 
         let folder_id = if let Some(path_id) = folder_id {
             path_id
@@ -51,7 +59,8 @@ impl ApiClient<'_> {
                 .get(&self.ident.username, &self.ident.password)
                 .write()
                 .file_id_map
-                .insert(path.to_string(), folder_id.clone());
+                .refresh(path)
+                .insert(path.to_string(), folder_id.clone().into_elem(None));
             folder_id
         };
 
