@@ -69,6 +69,9 @@
     "[ignore]": {
         "editor.defaultFormatter": "foxundermoon.shell-format"
     },
+    "[vue]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
     "rust-analyzer.check.features": [
         "__local_test"
     ],

@@ -113,7 +113,7 @@ impl<
                         key: decrypt_key.as_bytes().to_vec(),
                         data: d.clone(),
                     }
-                    .into_elem(None),
+                    .into_recycle_elem(None),
                 );
                 return d;
             }
@@ -130,6 +130,46 @@ impl<
                 data
             }
             MemoryElem::Decrypted { key: _, data } => data.clone(),
+        }
+    }
+
+    pub fn update_decrypt_key(&self, key: &K, old_decrypt_key: &str, new_decrypt_key: &str) {
+        let mut data = self.data.refresh(key);
+        let elem = match data.get_mut(key) {
+            Some(elem) => elem,
+            None => {
+                data.insert(
+                    key.clone(),
+                    MemoryElem::Decrypted {
+                        key: new_decrypt_key.as_bytes().to_vec(),
+                        data: Default::default(),
+                    }
+                    .into_recycle_elem(None),
+                );
+                return;
+            }
+        };
+
+        match &mut elem.data {
+            MemoryElem::Encrypted(d) => match decrypt::<V>(d, old_decrypt_key.as_bytes()) {
+                Ok(data) => {
+                    let data = Arc::new(RwLock::new(data));
+                    elem.data = MemoryElem::Decrypted {
+                        key: new_decrypt_key.as_bytes().to_vec(),
+                        data: data.clone(),
+                    };
+                }
+                Err(e) => {
+                    log::error!("[update_decrypt_key] Failed to decrypt data: {:?}", e);
+                }
+            },
+            MemoryElem::Decrypted { key: _, data } => {
+                let data = data.clone();
+                elem.data = MemoryElem::Decrypted {
+                    key: new_decrypt_key.as_bytes().to_vec(),
+                    data,
+                };
+            }
         }
     }
 

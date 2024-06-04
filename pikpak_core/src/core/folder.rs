@@ -60,7 +60,7 @@ impl ApiClient<'_> {
                 .write()
                 .file_id_map
                 .refresh(path)
-                .insert(path.to_string(), folder_id.clone().into_elem(None));
+                .insert(path.to_string(), folder_id.clone().into_recycle_elem(None));
             folder_id
         };
 

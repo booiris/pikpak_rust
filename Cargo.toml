@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["pikpak_core", "server"]
+members = [ "downloader","pikpak_core", "server"]
 
 [workspace.package]
 edition = "2021"

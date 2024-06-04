@@ -37,13 +37,13 @@ pub struct AutoRecycleStoreElem<T> {
 }
 
 pub trait IntoAutoRecycleStoreElem {
-    fn into_elem(self, refresh_time: Option<Duration>) -> AutoRecycleStoreElem<Self>
+    fn into_recycle_elem(self, refresh_time: Option<Duration>) -> AutoRecycleStoreElem<Self>
     where
         Self: std::marker::Sized;
 }
 
 impl<T> IntoAutoRecycleStoreElem for T {
-    fn into_elem(self, refresh_time: Option<Duration>) -> AutoRecycleStoreElem<Self>
+    fn into_recycle_elem(self, refresh_time: Option<Duration>) -> AutoRecycleStoreElem<Self>
     where
         Self: std::marker::Sized,
     {
