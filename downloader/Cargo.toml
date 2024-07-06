@@ -6,6 +6,23 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
+tokio = { workspace = true }
+derive_builder = { workspace = true }
+reqwest = { workspace = true }
+log = { workspace = true }
+http = { workspace = true }
+tokio-util = { workspace = true }
+futures-util = { workspace = true }
+headers = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+bytes = { workspace = true }
+parking_lot = { workspace = true, features = ["serde"] }
+
+[dev-dependencies]
+env_logger = { workspace = true }
+ctor = { workspace = true }
+dotenv_codegen = { workspace = true }
 
 [lints]
 workspace = true

@@ -1,6 +1,7 @@
 use std::{path::PathBuf, sync::Arc};
 
 use consts::*;
+use downloader::Downloader;
 use oauth2::{basic::BasicClient, AuthUrl, ClientId, ClientSecret, TokenUrl};
 use rand::{distributions::Alphanumeric, Rng};
 use reqwest::{header, Client};
@@ -38,6 +39,7 @@ pub(crate) struct PkiPakApiClientInner {
     pub oauth2_client: BasicClient,
     pub device_id: String,
     pub store: Store,
+    pub downloader: Downloader,
 }
 
 impl PkiPakApiClientInner {
@@ -70,11 +72,14 @@ impl PkiPakApiClientInner {
             Some(TokenUrl::new(TOKEN_URL.into()).expect("parse token url failed")),
         );
 
+        let downloader = Downloader::new(client.clone());
+
         Self {
             client,
             oauth2_client,
             device_id,
             store: Store::new(conf.and_then(|c| c.cache_dir)),
+            downloader,
         }
     }
 }

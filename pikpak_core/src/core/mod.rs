@@ -35,12 +35,7 @@ impl ApiClient<'_> {
         &self,
         req: RequestBuilder,
     ) -> Result<Resp, Error> {
-        let resp = req
-            .api_send(self)
-            .await?
-            .text()
-            .await
-            .map_err(Error::NetworkError)?;
+        let resp = req.api_send(self).await?.text().await?;
 
         trace!("response: {:#?}", resp);
 

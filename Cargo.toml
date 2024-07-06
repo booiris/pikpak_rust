@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = [ "downloader","pikpak_core", "server"]
+members = ["downloader", "pikpak_core", "server"]
 
 [workspace.package]
 edition = "2021"
@@ -16,12 +16,8 @@ humantime = "2.1"
 axum = "0.7"
 tower = "0.4"
 tower-http = { version = "0.5", features = ["cors", "catch-panic"] }
-utoipa = { git = "https://github.com/juhaku/utoipa.git", rev = "674d0b997db6cc6345249332a714342bd8a75bd7", features = [
-    "axum_extras",
-] }
-utoipa-swagger-ui = { git = "https://github.com/juhaku/utoipa.git", rev = "674d0b997db6cc6345249332a714342bd8a75bd7", features = [
-    "axum",
-] }
+utoipa = { verson = " =5.0.0-alpha.0", features = ["axum_extras"] }
+utoipa-swagger-ui = { verson = " =5.0.0-alpha.0", features = ["axum"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 lazy_static = "1.4"
@@ -41,6 +37,12 @@ env_logger = "0.11"
 ctor = "0.2"
 dotenv_codegen = "0.15"
 bincode = "1.3"
+derive_builder = "0.20"
+http = "1.1"
+tokio-util = "0.7"
+futures-util = "0.3"
+headers = "0.4"
+bytes = "1.6"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

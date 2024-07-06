@@ -1,14 +1,20 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+pub mod chunk;
+pub mod downloader;
+pub mod error;
+pub mod limiter;
+pub mod status_tracker;
+pub mod worker;
+
+pub use downloader::Downloader;
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+mod test {
+    #[ctor::ctor]
+    fn init_test() {
+        env_logger::builder()
+            .filter_level(log::LevelFilter::Debug)
+            .is_test(true)
+            .try_init()
+            .unwrap();
     }
 }
