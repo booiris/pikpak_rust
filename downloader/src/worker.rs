@@ -1,5 +1,6 @@
 use std::{path::PathBuf, sync::Arc};
 
+use anyhow::anyhow;
 use bytes::{Bytes, BytesMut};
 use futures_util::StreamExt;
 use headers::HeaderMapExt;
@@ -41,20 +42,29 @@ pub async fn do_work(
     log::debug!("req: {:#?}", req);
 
     let url = req.url().clone();
-    let mut stream = client
-        .execute(req)
-        .await
-        .map_err(|e| {
-            log::error!(
-                "[do work] request failed, err: {}, url: {}, range: {}, path: {:?}",
-                e,
-                url,
-                work_item.task,
-                work_item.path
-            );
-            e
-        })?
-        .bytes_stream();
+    let stream = client.execute(req).await.map_err(|e| {
+        log::error!(
+            "[do work] request failed, err: {}, url: {}, range: {}, path: {:?}",
+            e,
+            url,
+            work_item.task,
+            work_item.path
+        );
+        e
+    })?;
+
+    if stream.headers().get("Content-Range").is_none() {
+        log::error!(
+            "[do work] request failed, no content-range header resp, url: {}, range: {}, path: {:?}, resp header: {:?}",
+            url,
+            work_item.task,
+            work_item.path,
+            stream.headers()
+        );
+        return Err(Error::RequestError(anyhow!("no content-range header")));
+    }
+
+    let mut stream = stream.bytes_stream();
 
     let download_future = async {
         while let Some(bytes) = stream.next().await {

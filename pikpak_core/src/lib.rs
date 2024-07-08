@@ -1,11 +1,14 @@
 use std::{path::PathBuf, sync::Arc};
 
 use consts::*;
-use downloader::Downloader;
+use downloader::{downloader::DownloadManger, Downloader};
 use oauth2::{basic::BasicClient, AuthUrl, ClientId, ClientSecret, TokenUrl};
+use parking_lot::Mutex;
 use rand::{distributions::Alphanumeric, Rng};
 use reqwest::{header, Client};
 use store::Store;
+use tokio::task::JoinHandle;
+use tokio_util::sync::CancellationToken;
 
 pub mod api;
 mod consts;
@@ -40,6 +43,8 @@ pub(crate) struct PkiPakApiClientInner {
     pub device_id: String,
     pub store: Store,
     pub downloader: Downloader,
+    pub download_mangers:
+        Mutex<ahash::HashMap<String, (DownloadManger, CancellationToken, JoinHandle<()>)>>,
 }
 
 impl PkiPakApiClientInner {
@@ -80,6 +85,7 @@ impl PkiPakApiClientInner {
             device_id,
             store: Store::new(conf.and_then(|c| c.cache_dir)),
             downloader,
+            download_mangers: Default::default(),
         }
     }
 }
@@ -106,6 +112,7 @@ mod test {
         CLIENT.get_or_init(|| super::PkiPakApiClient::new(None))
     }
 
+    #[cfg(feature = "__local_test")]
     pub fn test_ident() -> Ident {
         Ident {
             username: dotenv!("username").into(),

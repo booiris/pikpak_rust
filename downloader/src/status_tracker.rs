@@ -6,7 +6,6 @@ pub struct Status {
     pub total: u64,
     pub downloaded: u64,
     pub current_speed: u64,
-    pub remaining: u64,
     pub downloaded_time: Duration,
     pub average_speed: u64,
 }
@@ -25,11 +24,23 @@ impl StatusTracker {
     }
 
     pub async fn get_status(&self) -> Status {
-        todo!()
+        Status {
+            total: 22,
+            downloaded: 0,
+            current_speed: 0,
+            downloaded_time: Duration::from_secs(0),
+            average_speed: 0,
+        }
     }
 
     pub async fn load_status_from_file(&self) -> Status {
-        todo!()
+        Status {
+            total: 22,
+            downloaded: 0,
+            current_speed: 0,
+            downloaded_time: Duration::from_secs(0),
+            average_speed: 0,
+        }
     }
 
     pub async fn save_status_to_file(&self) {

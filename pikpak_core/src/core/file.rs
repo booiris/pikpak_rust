@@ -114,7 +114,7 @@ impl ApiClient<'_> {
         Ok(file_list)
     }
 
-    pub async fn get_file_by_id(&mut self, file_id: &str) -> Result<FileType, Error> {
+    pub async fn get_file_by_id(&self, file_id: &str) -> Result<FileType, Error> {
         let req = self
             .http_client()
             .get(format!(

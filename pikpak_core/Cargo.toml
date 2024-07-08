@@ -24,6 +24,7 @@ path-clean = { workspace = true }
 bincode = { workspace = true }
 ring = { workspace = true }
 downloader = { path = "../downloader" }
+tokio-util = { workspace = true }
 
 [dev-dependencies]
 env_logger = { workspace = true }

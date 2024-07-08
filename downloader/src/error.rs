@@ -11,4 +11,6 @@ pub enum Error {
     CloneRequestError(String),
     #[error("Request error: {:?}", .0)]
     RequestError(#[from] anyhow::Error),
+    #[error("Thread error: {0}")]
+    ThreadError(#[from] tokio::task::JoinError),
 }
