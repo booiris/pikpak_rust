@@ -15,7 +15,7 @@ use ring::{
 };
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use tokio::sync::mpsc;
+use tokio_util::sync::CancellationToken;
 
 use super::auto_recycle_store::AutoRecycleStore;
 use super::auto_recycle_store::IntoAutoRecycleStoreElem;
@@ -34,7 +34,7 @@ pub struct EncryptedPersistentMemory<
     data: AutoRecycleStore<K, MemoryElem<V>>,
     persistence_interval: Duration,
     persistence_file: Option<PathBuf>,
-    cancel: Option<mpsc::Sender<()>>,
+    cancel: Option<CancellationToken>,
 }
 
 impl<
@@ -178,8 +178,8 @@ impl<
             return;
         }
 
-        let (tx, mut rx) = mpsc::channel::<()>(1);
-        self.cancel = Some(tx);
+        let cancel = CancellationToken::new();
+        self.cancel = Some(cancel.clone());
 
         let persistence_file = self.persistence_file.clone();
         let persistence_interval = self.persistence_interval;
@@ -187,7 +187,7 @@ impl<
         tokio::spawn(async move {
             loop {
                 tokio::select! {
-                    _ = rx.recv() => {
+                    _ = cancel.cancelled() => {
                         break;
                     }
                     _ = tokio::time::sleep(persistence_interval) => {}
@@ -233,9 +233,7 @@ impl<
 {
     fn drop(&mut self) {
         if let Some(cancel) = self.cancel.take() {
-            tokio::spawn(async move {
-                let _ = cancel.send(()).await;
-            });
+            cancel.cancel();
         }
     }
 }

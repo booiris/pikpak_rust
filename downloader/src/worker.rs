@@ -41,30 +41,42 @@ pub async fn do_work(
 
     log::debug!("req: {:#?}", req);
 
+    let mut stream = None;
     let url = req.url().clone();
-    let stream = client.execute(req).await.map_err(|e| {
-        log::error!(
-            "[do work] request failed, err: {}, url: {}, range: {}, path: {:?}",
-            e,
-            url,
-            work_item.task,
-            work_item.path
-        );
-        e
-    })?;
+    for _ in 0..5 {
+        let req = req.try_clone().unwrap();
+        let temp_stream = client.execute(req).await.map_err(|e| {
+            log::error!(
+                "[do work] request failed, err: {}, url: {}, range: {}, path: {:?}",
+                e,
+                url,
+                work_item.task,
+                work_item.path
+            );
+            e
+        })?;
 
-    if stream.headers().get("Content-Range").is_none() {
-        log::error!(
-            "[do work] request failed, no content-range header resp, url: {}, range: {}, path: {:?}, resp header: {:?}",
-            url,
-            work_item.task,
-            work_item.path,
-            stream.headers()
-        );
-        return Err(Error::RequestError(anyhow!("no content-range header")));
+        if temp_stream.headers().get("Content-Range").is_none() {
+            log::error!(
+                "[do work] request failed, no content-range header resp, url: {}, range: {}, path: {:?}, resp header: {:?}",
+                url,
+                work_item.task,
+                work_item.path,
+                temp_stream.headers()
+            );
+            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+            continue;
+        } else {
+            stream = Some(temp_stream);
+            break;
+        }
     }
 
-    let mut stream = stream.bytes_stream();
+    if stream.is_none() {
+        return Err(anyhow!("no valid response").into());
+    }
+
+    let mut stream = stream.unwrap().bytes_stream();
 
     let download_future = async {
         while let Some(bytes) = stream.next().await {

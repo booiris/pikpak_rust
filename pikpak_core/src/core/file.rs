@@ -115,13 +115,10 @@ impl ApiClient<'_> {
     }
 
     pub async fn get_file_by_id(&self, file_id: &str) -> Result<FileType, Error> {
-        let req = self
-            .http_client()
-            .get(format!(
-                "https://api-drive.mypikpak.com/drive/v1/files/{}",
-                file_id
-            ))
-            .header("thumbnail_size", "SIZE_MEDIUM");
+        let req = self.http_client().get(format!(
+            "https://api-drive.mypikpak.com/drive/v1/files/{}",
+            file_id
+        ));
 
         trace!("req: {:?}", req);
 

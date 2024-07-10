@@ -24,6 +24,7 @@ impl PkiPakApiClient {
 
         let api = self.api(&req.ident, &option);
 
-        api.download(&req.path, &req.output_dir).await
+        // api.download(&req.path, &req.output_dir).await
+        todo!()
     }
 }

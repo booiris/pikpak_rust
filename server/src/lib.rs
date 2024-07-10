@@ -6,6 +6,11 @@ use axum::{
     routing::{get, post},
     serve, Router,
 };
+
+use handlers::{
+    download_pause::download_pause, download_remove::download_remove,
+    mget_download_status::mget_download_status,
+};
 use log::{error, info};
 use pikpak_core::{PkiPakApiClient, PkiPakApiConfig};
 use tower_http::{
@@ -15,7 +20,10 @@ use tower_http::{
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use crate::handlers::{login::login, remote_list::remote_list, ApiDoc, PIKPAK_CORE_CLIENT};
+use crate::handlers::{
+    download_begin::download_begin, login::login, remote_list::remote_list, ApiDoc,
+    PIKPAK_CORE_CLIENT,
+};
 
 mod extension;
 mod handlers;
@@ -48,7 +56,11 @@ pub async fn start_server(
             "/api",
             Router::new()
                 .route("/login", post(login))
-                .route("/remote_list", get(remote_list)),
+                .route("/remote_list", get(remote_list))
+                .route("/download_begin", post(download_begin))
+                .route("/download_pause", post(download_pause))
+                .route("/download_remove", post(download_remove))
+                .route("/mget_download_status", get(mget_download_status)),
         )
         .merge(SwaggerUi::new("/doc").url("/openapi.json", ApiDoc::openapi()))
         .layer(cors)

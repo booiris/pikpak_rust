@@ -1,16 +1,16 @@
-import { Configuration, RemoteListApi } from '@/api'
+import { Configuration, Filter, MgetDownloadStatusApi } from '@/api'
 import { useBackendUrlStore } from '@/stores/backend_url'
 import { useTokenStore } from '@/stores/token'
 
-const client = new RemoteListApi(
+const client = new MgetDownloadStatusApi(
     new Configuration({
         basePath: useBackendUrlStore().storedUrl,
         accessToken: useTokenStore().storedToken
     })
 )
 
-export const remoteListApi = async (path: string) => {
-    return client.remoteList(path, {
-        timeout: 4000
+export const mgetDownloadStatusApi = async (filter?: Filter) => {
+    return client.mgetDownloadStatus(filter, {
+        timeout: 2000
     })
 }

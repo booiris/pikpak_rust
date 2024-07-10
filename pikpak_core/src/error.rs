@@ -16,6 +16,4 @@ pub enum Error {
     Oauth2Error(String),
     #[error("Request error: {:?}", .0)]
     RequestError(#[from] anyhow::Error),
-    #[error("Downloader error: {0}")]
-    DownloaderError(#[from] downloader::error::Error),
 }

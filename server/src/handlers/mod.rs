@@ -10,7 +10,11 @@ use utoipa::{ToResponse, ToSchema};
 
 use crate::{extension::auth::SecurityAddon, utils::token::Cipher};
 
+pub mod download_begin;
+pub mod download_pause;
+pub mod download_remove;
 pub mod login;
+pub mod mget_download_status;
 pub mod remote_list;
 
 #[derive(Serialize, Deserialize, ToSchema, ToResponse, Clone)]
@@ -74,6 +78,10 @@ use utoipa::OpenApi;
     nest(
         (path = "/api/login", api = login::LoginApi),
         (path = "/api/remote_list", api = remote_list::RemoteListApi),
+        (path = "/api/download_begin", api = download_begin::DownloadBeginApi),
+        (path = "/api/download_pause", api = download_pause::DownloadPauseApi),
+        (path = "/api/download_remove", api = download_remove::DownloadRemoveApi),
+        (path = "/api/mget_download_status", api = mget_download_status::MgetDownloadStatusApi)
     ),
     modifiers(&SecurityAddon)
 )]

@@ -1,7 +1,6 @@
 use std::{path::PathBuf, sync::Arc};
 
 use consts::*;
-use downloader::{downloader::DownloadManger, Downloader};
 use oauth2::{basic::BasicClient, AuthUrl, ClientId, ClientSecret, TokenUrl};
 use parking_lot::Mutex;
 use rand::{distributions::Alphanumeric, Rng};
@@ -42,9 +41,6 @@ pub(crate) struct PkiPakApiClientInner {
     pub oauth2_client: BasicClient,
     pub device_id: String,
     pub store: Store,
-    pub downloader: Downloader,
-    pub download_mangers:
-        Mutex<ahash::HashMap<String, (DownloadManger, CancellationToken, JoinHandle<()>)>>,
 }
 
 impl PkiPakApiClientInner {
@@ -61,6 +57,7 @@ impl PkiPakApiClientInner {
             "X-Device-Id",
             device_id.parse().expect("parse device id header failed"),
         );
+        headers.insert("Connection", header::HeaderValue::from_static("keep-alive"));
 
         let mut client_builder: reqwest::ClientBuilder =
             reqwest::Client::builder().default_headers(headers);
@@ -77,15 +74,11 @@ impl PkiPakApiClientInner {
             Some(TokenUrl::new(TOKEN_URL.into()).expect("parse token url failed")),
         );
 
-        let downloader = Downloader::new(client.clone());
-
         Self {
             client,
             oauth2_client,
             device_id,
             store: Store::new(conf.and_then(|c| c.cache_dir)),
-            downloader,
-            download_mangers: Default::default(),
         }
     }
 }

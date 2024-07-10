@@ -13,12 +13,16 @@
             <el-icon><Download /></el-icon>
             <template #title>Downloading</template>
         </el-menu-item>
+        <el-menu-item index="file_downloaded">
+            <el-icon><DocumentChecked /></el-icon>
+            <template #title>Downloaded</template>
+        </el-menu-item>
     </el-menu>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Files, Download } from '@element-plus/icons-vue'
+import { Files, Download, DocumentChecked } from '@element-plus/icons-vue'
 
 const isCollapse = ref(false)
 </script>

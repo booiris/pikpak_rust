@@ -47,12 +47,15 @@ import { onMounted, reactive, ref, watch, type CSSProperties } from 'vue'
 import { parseISO, format } from 'date-fns'
 import prettyBytes from 'pretty-bytes'
 import _ from 'lodash'
+import { ElMessageBox } from 'element-plus'
+import { downloadBeginApi } from '@/services/download_begin'
 
 interface tableDataType {
     fileName: string
     size: string
     updateTime: string
     kind: string
+    id: string
 }
 
 const tableData = reactive<tableDataType[]>([])
@@ -73,7 +76,7 @@ async function get_file_status(path: string): Promise<tableDataType[]> {
     if (!data) {
         return []
     }
-    console.log(data)
+    console.debug(data)
     let tempData = []
     for (let file_status of data.data.files_info) {
         const date = parseISO(file_status.modified_time)
@@ -85,7 +88,8 @@ async function get_file_status(path: string): Promise<tableDataType[]> {
             fileName: file_status.name,
             size: size,
             updateTime: format(date, 'yyyy-MM-dd HH:mm'),
-            kind: file_status.kind
+            kind: file_status.kind,
+            id: file_status.id
         })
     }
     return tempData
@@ -120,6 +124,45 @@ onMounted(async () => {
 function handleRawClick(row: tableDataType) {
     if (row.kind == 'drive#folder') {
         pathList.value.push(row.fileName)
+    }
+    if (row.kind == 'drive#file') {
+        ElMessageBox.confirm('Download "' + row.fileName + '" , Continue?', 'Download Confirm', {
+            confirmButtonText: 'OK',
+            cancelButtonText: 'Cancel',
+            type: 'info'
+        })
+            .then(async () => {
+                await downloadBeginApi(row.id, row.fileName)
+                    .then((data) => {
+                        if (data.data.code == 1) {
+                            ElMessage({
+                                type: 'info',
+                                message: '"' + row.fileName + '" Already Download'
+                            })
+                            return
+                        } else {
+                            ElMessage({
+                                type: 'success',
+                                message: '"' + row.fileName + '" Download Start'
+                            })
+                        }
+                    })
+                    .catch((err: AxiosError) => {
+                        console.error(err)
+                        let error = parseApiError(err)
+                        ElMessage.error({
+                            showClose: true,
+                            message: 'download file <' + row.fileName + '> failed, err: ' + error,
+                            duration: 5000
+                        })
+                    })
+            })
+            .catch(() => {
+                ElMessage({
+                    type: 'info',
+                    message: '"' + row.fileName + '" Download Canceled'
+                })
+            })
     }
 }
 

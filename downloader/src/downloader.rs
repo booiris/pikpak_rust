@@ -45,7 +45,7 @@ impl Downloader {
             speed_limiter: SpeedLimiter::new(conf.speed_limit_per_sec),
             status_tracker: StatusTracker::new(conf.download_path, done.clone()),
             client: self.client.clone(),
-            worker_num: Mutex::new(conf.worker_num.unwrap_or(8)),
+            worker_num: Mutex::new(conf.worker_num.unwrap_or(4)),
             chunk_size: Mutex::new(conf.chunk_size.unwrap_or(2 * 1024 * 1024)),
             runner_lock: tokio::sync::Mutex::new(()),
             done,

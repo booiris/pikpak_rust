@@ -21,6 +21,11 @@ const router = createRouter({
                     path: 'file_downloading',
                     name: 'file_downloading',
                     component: () => import('@/components/main/FileDownloading.vue')
+                },
+                {
+                    path: 'file_downloaded',
+                    name: 'file_downloaded',
+                    component: () => import('@/components/main/FileDownloaded.vue')
                 }
             ]
         }
