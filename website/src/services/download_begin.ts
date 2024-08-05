@@ -9,9 +9,9 @@ const client = new DownloadBeginApi(
     })
 )
 
-export const downloadBeginApi = async (file_id: string, file_path: string) => {
+export const downloadBeginApi = async (file_id: string) => {
     return client.downloadBegin(
-        { file_id: file_id, path: file_path },
+        { file_id: file_id },
         {
             timeout: 2000
         }

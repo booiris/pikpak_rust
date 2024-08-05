@@ -32,8 +32,8 @@ pub struct DownloadRemoveResp {
     )
 )]
 pub async fn download_remove(
-    AuthExtractor(token): AuthExtractor,
-    Json(req): Json<DownloadRemoveReq>,
+    AuthExtractor(_token): AuthExtractor,
+    Json(_req): Json<DownloadRemoveReq>,
 ) -> Result<Json<DownloadRemoveResp>, BaseResp> {
     Ok(Json(DownloadRemoveResp {
         base_resp: BaseResp::default(),

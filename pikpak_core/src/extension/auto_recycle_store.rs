@@ -3,15 +3,15 @@ use std::{sync::Arc, time::Duration};
 
 use ahash::HashMap;
 use chrono::{DateTime, Utc};
-use parking_lot::{Mutex, MutexGuard};
+use parking_lot::{MappedMutexGuard, Mutex, MutexGuard};
 use serde::{Deserialize, Serialize};
-use tokio::sync::mpsc;
+use tokio_util::sync::CancellationToken;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AutoRecycleStore<K: Hash + Eq + PartialEq, T> {
     data: Arc<Mutex<HashMap<K, AutoRecycleStoreElem<T>>>>,
     #[serde(skip)]
-    cancel: Option<mpsc::Sender<()>>,
+    cancel: Option<CancellationToken>,
 }
 
 const DEFAULT_REFRESH_TIME: Duration = Duration::from_secs(60 * 60 * 24 * 30);
@@ -70,26 +70,33 @@ impl<K: Hash + Eq + PartialEq + Send + 'static, T: Send + 'static> AutoRecycleSt
         self.data.lock()
     }
 
-    pub fn refresh(&self, key: &K) -> MutexGuard<'_, HashMap<K, AutoRecycleStoreElem<T>>> {
-        let mut data = self.data.lock();
-
-        if let Some(elem) = data.get_mut(key) {
-            elem.recycle_at = Utc::now() + elem.refresh_time;
+    pub fn get_mut(&self, key: &K) -> Option<MappedMutexGuard<T>> {
+        let data = self.data.lock();
+        if data.contains_key(key) {
+            Some(MutexGuard::map(data, |x| {
+                let elem = x.get_mut(key).unwrap();
+                elem.recycle_at = Utc::now() + elem.refresh_time;
+                &mut elem.data
+            }))
+        } else {
+            None
         }
+    }
 
-        data
+    pub fn insert(&self, key: K, elem: AutoRecycleStoreElem<T>) {
+        self.data.lock().insert(key, elem);
     }
 
     fn recycle(&mut self) {
-        let (tx, mut rx) = mpsc::channel::<()>(1);
-        self.cancel = Some(tx);
+        let cancel = CancellationToken::new();
+        self.cancel = Some(cancel.clone());
 
         let data = self.data.clone();
         tokio::spawn(async move {
             loop {
                 tokio::select! {
                     _ = tokio::time::sleep(Duration::from_secs(360)) => {}
-                    _ = rx.recv() => break,
+                    _ = cancel.cancelled() => break,
                 }
                 let mut data = data.lock();
                 data.retain(|_, v| v.recycle_at > Utc::now());
@@ -102,9 +109,7 @@ impl<K: Hash + Eq + PartialEq + Send + 'static, T: Send + 'static> AutoRecycleSt
 impl<K: Hash + Eq + PartialEq, T> Drop for AutoRecycleStore<K, T> {
     fn drop(&mut self) {
         if let Some(cancel) = self.cancel.take() {
-            tokio::spawn(async move {
-                let _ = cancel.send(()).await;
-            });
+            cancel.cancel();
         }
     }
 }

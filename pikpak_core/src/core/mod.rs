@@ -9,7 +9,7 @@ use crate::{
     PkiPakApiClient,
 };
 
-pub mod download;
+pub mod downloader;
 pub mod file;
 pub mod folder;
 pub mod token;

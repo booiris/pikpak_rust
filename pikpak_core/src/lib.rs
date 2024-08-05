@@ -1,13 +1,14 @@
-use std::{path::PathBuf, sync::Arc};
+use core::downloader::Downloader;
+use std::{
+    path::PathBuf,
+    sync::{Arc, OnceLock},
+};
 
 use consts::*;
 use oauth2::{basic::BasicClient, AuthUrl, ClientId, ClientSecret, TokenUrl};
-use parking_lot::Mutex;
 use rand::{distributions::Alphanumeric, Rng};
 use reqwest::{header, Client};
 use store::Store;
-use tokio::task::JoinHandle;
-use tokio_util::sync::CancellationToken;
 
 pub mod api;
 mod consts;
@@ -29,10 +30,21 @@ pub struct PkiPakApiClient {
 }
 
 impl PkiPakApiClient {
-    pub fn new(conf: Option<PkiPakApiConfig>) -> Self {
-        Self {
-            inner: Arc::new(PkiPakApiClientInner::new(conf)),
+    pub fn new(conf: Option<PkiPakApiConfig>, decrypt_key: String) -> Self {
+        let h = Self {
+            inner: Arc::new(PkiPakApiClientInner::new(conf, decrypt_key)),
+        };
+        if h.inner
+            .downloader
+            .set(Downloader::new(
+                h.clone(),
+                h.inner.store.pikpak_download_info.clone(),
+            ))
+            .is_err()
+        {
+            panic!("downloader has been initialized");
         }
+        h
     }
 }
 
@@ -41,10 +53,11 @@ pub(crate) struct PkiPakApiClientInner {
     pub oauth2_client: BasicClient,
     pub device_id: String,
     pub store: Store,
+    pub downloader: OnceLock<Downloader>,
 }
 
 impl PkiPakApiClientInner {
-    pub fn new(conf: Option<PkiPakApiConfig>) -> Self {
+    pub fn new(conf: Option<PkiPakApiConfig>, decrypt_key: String) -> Self {
         let device_id: String = rand::thread_rng()
             .sample_iter(&Alphanumeric)
             .take(32)
@@ -74,12 +87,19 @@ impl PkiPakApiClientInner {
             Some(TokenUrl::new(TOKEN_URL.into()).expect("parse token url failed")),
         );
 
+        let store = Store::new(conf.and_then(|c| c.cache_dir), decrypt_key);
+
         Self {
             client,
             oauth2_client,
             device_id,
-            store: Store::new(conf.and_then(|c| c.cache_dir)),
+            store,
+            downloader: OnceLock::new(),
         }
+    }
+
+    pub(crate) fn downloader(&self) -> &Downloader {
+        self.downloader.get().unwrap()
     }
 }
 
@@ -102,7 +122,7 @@ mod test {
 
     pub fn test_client() -> &'static super::PkiPakApiClient {
         static CLIENT: OnceLock<super::PkiPakApiClient> = OnceLock::new();
-        CLIENT.get_or_init(|| super::PkiPakApiClient::new(None))
+        CLIENT.get_or_init(|| super::PkiPakApiClient::new(None, "1".into()))
     }
 
     #[cfg(feature = "__local_test")]

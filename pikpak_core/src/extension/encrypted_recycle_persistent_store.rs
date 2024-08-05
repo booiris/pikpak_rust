@@ -4,22 +4,34 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 
-use ahash::{AHashMap, HashMap};
-use parking_lot::{Mutex, RwLock};
+use ahash::HashMap;
+use chrono::Utc;
+use parking_lot::RwLock;
+use ring::aead::Aad;
+use ring::{
+    aead::{self, BoundKey, Nonce, NonceSequence, NONCE_LEN},
+    digest,
+    error::Unspecified,
+};
 use serde::de::DeserializeOwned;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tokio_util::sync::CancellationToken;
 
-use crate::extension::encrypted_recycle_persistent_store::encrypt;
+use super::auto_recycle_store::AutoRecycleStore;
+use super::auto_recycle_store::IntoAutoRecycleStoreElem;
 
-use super::encrypted_recycle_persistent_store::{decrypt, MemoryElem};
+#[derive(Serialize, Deserialize, Debug, Clone)]
 
+pub enum MemoryElem<T> {
+    Encrypted(Vec<u8>),
+    Decrypted { key: Vec<u8>, data: Arc<RwLock<T>> },
+}
 #[derive(Debug)]
-pub struct EncryptedPersistentMemory<
+pub struct EncryptedRecyclePersistentMemory<
     K: Hash + Eq + PartialEq + Send + 'static + Serialize + Clone + DeserializeOwned + Debug,
     V: Default + DeserializeOwned + Send + 'static + Serialize + Clone + Debug + Sync,
 > {
-    data: Arc<Mutex<AHashMap<K, MemoryElem<V>>>>,
+    data: AutoRecycleStore<K, MemoryElem<V>>,
     persistence_interval: Duration,
     persistence_file: Option<PathBuf>,
     cancel: Option<CancellationToken>,
@@ -28,7 +40,7 @@ pub struct EncryptedPersistentMemory<
 impl<
         K: Hash + Eq + PartialEq + Send + 'static + Serialize + Clone + DeserializeOwned + Debug,
         V: Default + DeserializeOwned + Send + 'static + Serialize + Clone + Debug + Sync,
-    > EncryptedPersistentMemory<K, V>
+    > EncryptedRecyclePersistentMemory<K, V>
 {
     pub fn new(
         origin_file: Option<PathBuf>,
@@ -56,7 +68,7 @@ impl<
             .unwrap_or_default();
 
         let mut x = Self {
-            data: Arc::new(Mutex::new(data)),
+            data: AutoRecycleStore::new(data),
             persistence_file,
             persistence_interval: persistence_interval.unwrap_or(Duration::from_secs(60)),
             cancel: None,
@@ -66,8 +78,7 @@ impl<
     }
 
     pub fn get_checked(&self, key: &K, decrypt_key: &str) -> Option<Arc<RwLock<V>>> {
-        let mut data = self.data.lock();
-        let elem = match data.get_mut(key) {
+        let mut elem = match self.data.get_mut(key) {
             Some(elem) => elem,
             None => return None,
         };
@@ -90,17 +101,17 @@ impl<
     }
 
     pub fn get(&self, key: &K, decrypt_key: &str) -> Arc<RwLock<V>> {
-        let mut data = self.data.lock();
-        let elem = match data.get_mut(key) {
+        let mut elem = match self.data.get_mut(key) {
             Some(elem) => elem,
             None => {
                 let d = Arc::new(RwLock::new(V::default()));
-                data.insert(
+                self.data.insert(
                     key.clone(),
                     MemoryElem::Decrypted {
                         key: decrypt_key.as_bytes().to_vec(),
                         data: d.clone(),
-                    },
+                    }
+                    .into_recycle_elem(None),
                 );
                 return d;
             }
@@ -121,16 +132,16 @@ impl<
     }
 
     pub fn update_decrypt_key(&self, key: &K, old_decrypt_key: &str, new_decrypt_key: &str) {
-        let mut data = self.data.lock();
-        let elem = match data.get_mut(key) {
+        let mut elem = match self.data.get_mut(key) {
             Some(elem) => elem,
             None => {
-                data.insert(
+                self.data.insert(
                     key.clone(),
                     MemoryElem::Decrypted {
                         key: new_decrypt_key.as_bytes().to_vec(),
                         data: Default::default(),
-                    },
+                    }
+                    .into_recycle_elem(None),
                 );
                 return;
             }
@@ -157,16 +168,6 @@ impl<
                 };
             }
         }
-    }
-
-    pub fn unlock_all(&self, decrypt_key: &str) -> AHashMap<K, Arc<RwLock<V>>> {
-        let data = self.data.lock();
-        let mut res = AHashMap::new();
-        for k in data.keys() {
-            let d = self.get(k, decrypt_key);
-            res.insert(k.clone(), d.clone());
-        }
-        res
     }
 
     fn persistence(&mut self) {
@@ -196,16 +197,18 @@ impl<
                     .collect::<HashMap<_, _>>();
 
                 for v in cloned_data.values_mut() {
-                    if let MemoryElem::Decrypted { ref key, ref data } = v {
+                    if let MemoryElem::Decrypted { ref key, ref data } = v.data {
                         let data = data.clone();
                         let data = data.read();
                         let encrypted_data = encrypt(&*data, key);
                         if encrypted_data.is_empty() {
+                            v.recycle_at = chrono::DateTime::default();
                             continue;
                         }
-                        *v = MemoryElem::Encrypted(encrypted_data);
+                        v.data = MemoryElem::Encrypted(encrypted_data);
                     }
                 }
+                cloned_data.retain(|_, v| v.recycle_at > Utc::now());
 
                 if let Ok(data) = bincode::serialize(&cloned_data) {
                     if let Err(e) =
@@ -223,7 +226,7 @@ impl<
 impl<
         K: Hash + Eq + PartialEq + Send + 'static + Serialize + Clone + DeserializeOwned + Debug,
         V: Default + DeserializeOwned + Send + 'static + Serialize + Clone + Debug + Sync,
-    > Drop for EncryptedPersistentMemory<K, V>
+    > Drop for EncryptedRecyclePersistentMemory<K, V>
 {
     fn drop(&mut self) {
         if let Some(cancel) = self.cancel.take() {
@@ -232,10 +235,72 @@ impl<
     }
 }
 
+#[derive(Default)]
+pub(crate) struct NonceSeq([u8; NONCE_LEN]);
+
+impl NonceSequence for &mut NonceSeq {
+    fn advance(&mut self) -> Result<Nonce, Unspecified> {
+        Nonce::try_assume_unique_for_key(&self.0)
+    }
+}
+
+pub(crate) fn decrypt<T: Default + DeserializeOwned>(data: &mut [u8], key: &[u8]) -> Result<T, ()> {
+    let key = digest::digest(&digest::SHA256, key);
+    let unbound_key = match aead::UnboundKey::new(&aead::AES_256_GCM, key.as_ref()) {
+        Ok(k) => k,
+        Err(e) => {
+            log::error!("[decrypt] Failed to create unbound key: {}", e);
+            return Err(());
+        }
+    };
+
+    let nonce = &mut NonceSeq::default();
+    let mut open_key = aead::OpeningKey::new(unbound_key, nonce);
+    let data = match open_key.open_in_place(Aad::empty(), data) {
+        Ok(d) => d.to_vec(),
+        Err(e) => {
+            log::error!("[decrypt] Failed to decrypt data: {}", e);
+            return Err(());
+        }
+    };
+
+    match bincode::deserialize::<T>(&data) {
+        Ok(d) => Ok(d),
+        Err(_) => Err(()),
+    }
+}
+
+pub(crate) fn encrypt<T: Serialize>(data: &T, key: &[u8]) -> Vec<u8> {
+    let key = digest::digest(&digest::SHA256, key);
+    let unbound_key = match aead::UnboundKey::new(&aead::AES_256_GCM, key.as_ref()) {
+        Ok(k) => k,
+        Err(e) => {
+            log::error!("[encrypt] Failed to create unbound key: {}", e);
+            return Vec::new();
+        }
+    };
+
+    let nonce = &mut NonceSeq::default();
+    let mut sealing_key = aead::SealingKey::new(unbound_key, nonce);
+    let mut data = match bincode::serialize(data) {
+        Ok(d) => d,
+        Err(e) => {
+            log::error!("[encrypt] Failed to serialize data: {}", e);
+            return Vec::new();
+        }
+    };
+
+    match sealing_key.seal_in_place_append_tag(Aad::empty(), &mut data) {
+        Ok(_) => data,
+        Err(e) => {
+            log::error!("Failed to encrypt data: {}", e);
+            Vec::new()
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use serde::Deserialize;
-
     use super::*;
 
     #[derive(Serialize, Deserialize, Debug, Default, Clone)]
@@ -246,9 +311,9 @@ mod test {
 
     #[tokio::test]
     async fn test_encrypted_persistent_memory() {
-        let data = EncryptedPersistentMemory::<String, TestData>::new(
+        let data = EncryptedRecyclePersistentMemory::<String, TestData>::new(
             None,
-            Some(PathBuf::from("cache/test_hashmap.bin")),
+            Some(PathBuf::from("cache/test.bin")),
             Some(Duration::from_secs(3)),
         );
 
@@ -286,8 +351,8 @@ mod test {
 
         tokio::time::sleep(Duration::from_secs(1)).await;
 
-        let data = EncryptedPersistentMemory::<String, TestData>::new(
-            Some(PathBuf::from("cache/test_hashmap.bin")),
+        let data = EncryptedRecyclePersistentMemory::<String, TestData>::new(
+            Some(PathBuf::from("cache/test.bin")),
             None,
             None,
         );

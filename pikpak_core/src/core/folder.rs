@@ -40,13 +40,8 @@ impl ApiClient<'_> {
             .store
             .pikpak_file_id_cache
             .get_checked(&self.ident.username, &self.ident.password);
-        let folder_id = path_id_cache.and_then(|x| {
-            x.read()
-                .file_id_map
-                .refresh(path)
-                .get(path)
-                .map(|x| x.data.clone())
-        });
+        let folder_id =
+            path_id_cache.and_then(|x| x.read().file_id_map.get_mut(path).map(|x| x.clone()));
 
         let folder_id = if let Some(path_id) = folder_id {
             path_id
@@ -59,7 +54,6 @@ impl ApiClient<'_> {
                 .get(&self.ident.username, &self.ident.password)
                 .write()
                 .file_id_map
-                .refresh(path)
                 .insert(path.to_string(), folder_id.clone().into_recycle_elem(None));
             folder_id
         };

@@ -34,12 +34,13 @@ pub async fn start_server(
     port: impl Into<&str>,
     proxy: Option<String>,
     cache_dir: Option<PathBuf>,
+    decrypt_key: String,
 ) -> Result<(), Error> {
     PIKPAK_CORE_CLIENT
-        .set(PkiPakApiClient::new(Some(PkiPakApiConfig {
-            proxy,
-            cache_dir,
-        })))
+        .set(PkiPakApiClient::new(
+            Some(PkiPakApiConfig { proxy, cache_dir }),
+            decrypt_key,
+        ))
         .map_err(|_| {
             error!("[rust pikpak server] set pikpak core client error");
             anyhow!("set pikpak core client error")

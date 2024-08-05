@@ -1,7 +1,13 @@
+use std::fmt::{Debug, Display};
+
 use serde::{Deserialize, Serialize};
 
+use crate::store::UserName;
+
 pub mod download;
+pub mod download_pause;
 pub mod login;
+pub mod mget_download_status;
 pub mod remote_list;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -30,8 +36,23 @@ pub(crate) enum RespWrapper<T> {
     Err(ErrorResp),
 }
 
-#[derive(Default, PartialEq, Eq, Hash, Clone, Serialize, Deserialize, Debug)]
+#[derive(Default, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub struct Ident {
-    pub username: String,
+    pub username: UserName,
     pub password: String,
+}
+
+impl Debug for Ident {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Ident")
+            .field("username", &self.username)
+            .field("password", &"********")
+            .finish()
+    }
+}
+
+impl Display for Ident {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}:********", self.username)
+    }
 }

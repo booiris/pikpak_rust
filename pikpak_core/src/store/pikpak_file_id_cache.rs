@@ -6,17 +6,15 @@ use serde::{Deserialize, Serialize};
 use crate::{
     core::folder::FileIDType,
     extension::{
-        auto_recycle_store::AutoRecycleStore, encrypted_persistent_store::EncryptedPersistentMemory,
+        auto_recycle_store::AutoRecycleStore,
+        encrypted_recycle_persistent_store::EncryptedRecyclePersistentMemory,
     },
 };
 
-use super::ReadFromFile;
-
-type UserName = String;
-type RemoteFilePath = String;
+use super::{ReadFromFile, RemoteFilePath, UserName};
 
 #[derive(Debug)]
-pub struct PikPakFileIdCache(EncryptedPersistentMemory<UserName, PikPakFileIdCacheElement>);
+pub struct PikPakFileIdCache(EncryptedRecyclePersistentMemory<UserName, PikPakFileIdCacheElement>);
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct PikPakFileIdCacheElement {
@@ -38,9 +36,9 @@ impl PikPakFileIdCache {
 }
 
 impl ReadFromFile for PikPakFileIdCache {
-    fn read_from_file(base_dir: &std::path::Path) -> Self {
+    fn read_from_file(base_dir: &std::path::Path, _: Option<String>) -> Self {
         let path = base_dir.join(Self::cache_file_name());
-        let store = EncryptedPersistentMemory::new(Some(path.clone()), Some(path), None);
+        let store = EncryptedRecyclePersistentMemory::new(Some(path.clone()), Some(path), None);
         Self(store)
     }
 

@@ -59,7 +59,13 @@ export interface DownloadBeginReq {
      * @type {string}
      * @memberof DownloadBeginReq
      */
-    'path': string;
+    'output_dir': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DownloadBeginReq
+     */
+    'rename': string;
 }
 /**
  * 
@@ -92,12 +98,6 @@ export interface DownloadPauseReq {
      * @memberof DownloadPauseReq
      */
     'file_id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DownloadPauseReq
-     */
-    'path': string;
 }
 /**
  * 
@@ -163,6 +163,80 @@ export interface DownloadRemoveResp {
     'message': string;
 }
 /**
+ * @type DownloadStatusEnum
+ * @export
+ */
+export type DownloadStatusEnum = DownloadStatusEnumOneOf | string;
+
+/**
+ * 
+ * @export
+ * @interface DownloadStatusEnumOneOf
+ */
+export interface DownloadStatusEnumOneOf {
+    /**
+     * 
+     * @type {string}
+     * @memberof DownloadStatusEnumOneOf
+     */
+    'HasError': string;
+}
+/**
+ * 
+ * @export
+ * @interface DownloadStatusType
+ */
+export interface DownloadStatusType {
+    /**
+     * 
+     * @type {number}
+     * @memberof DownloadStatusType
+     */
+    'current_speed': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DownloadStatusType
+     */
+    'download_to_local_path': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof DownloadStatusType
+     */
+    'downloaded': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DownloadStatusType
+     */
+    'downloaded_time': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DownloadStatusType
+     */
+    'file_id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DownloadStatusType
+     */
+    'remote_file_name': string;
+    /**
+     * 
+     * @type {DownloadStatusEnum}
+     * @memberof DownloadStatusType
+     */
+    'status': DownloadStatusEnum;
+    /**
+     * 
+     * @type {number}
+     * @memberof DownloadStatusType
+     */
+    'total': number;
+}
+/**
  * 
  * @export
  * @enum {string}
@@ -171,7 +245,9 @@ export interface DownloadRemoveResp {
 export const Filter = {
     Downloading: 'Downloading',
     Paused: 'Paused',
-    Completed: 'Completed'
+    Completed: 'Completed',
+    Waiting: 'Waiting',
+    HasError: 'HasError'
 } as const;
 
 export type Filter = typeof Filter[keyof typeof Filter];
@@ -229,13 +305,11 @@ export interface LoginResp {
 export interface MgetDownloadStatusReq {
     /**
      * 
-     * @type {Filter}
+     * @type {Array<Filter>}
      * @memberof MgetDownloadStatusReq
      */
-    'filter'?: Filter | null;
+    'filter'?: Array<Filter> | null;
 }
-
-
 /**
  * 
  * @export
@@ -254,6 +328,12 @@ export interface MgetDownloadStatusResp {
      * @memberof MgetDownloadStatusResp
      */
     'message': string;
+    /**
+     * 
+     * @type {Array<DownloadStatusType>}
+     * @memberof MgetDownloadStatusResp
+     */
+    'download_status': Array<DownloadStatusType>;
 }
 /**
  * 
@@ -835,11 +915,11 @@ export const MgetDownloadStatusApiAxiosParamCreator = function (configuration?: 
     return {
         /**
          * 
-         * @param {Filter | null} [filter] 
+         * @param {Array<Filter> | null} [filter] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        mgetDownloadStatus: async (filter?: Filter | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        mgetDownloadStatus: async (filter?: Array<Filter> | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/mget_download_status`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -856,7 +936,7 @@ export const MgetDownloadStatusApiAxiosParamCreator = function (configuration?: 
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (filter !== undefined) {
+            if (filter) {
                 localVarQueryParameter['filter'] = filter;
             }
 
@@ -883,11 +963,11 @@ export const MgetDownloadStatusApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {Filter | null} [filter] 
+         * @param {Array<Filter> | null} [filter] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async mgetDownloadStatus(filter?: Filter | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DownloadPauseResp>> {
+        async mgetDownloadStatus(filter?: Array<Filter> | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DownloadPauseResp>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.mgetDownloadStatus(filter, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['MgetDownloadStatusApi.mgetDownloadStatus']?.[localVarOperationServerIndex]?.url;
@@ -905,11 +985,11 @@ export const MgetDownloadStatusApiFactory = function (configuration?: Configurat
     return {
         /**
          * 
-         * @param {Filter | null} [filter] 
+         * @param {Array<Filter> | null} [filter] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        mgetDownloadStatus(filter?: Filter | null, options?: any): AxiosPromise<DownloadPauseResp> {
+        mgetDownloadStatus(filter?: Array<Filter> | null, options?: any): AxiosPromise<DownloadPauseResp> {
             return localVarFp.mgetDownloadStatus(filter, options).then((request) => request(axios, basePath));
         },
     };
@@ -924,12 +1004,12 @@ export const MgetDownloadStatusApiFactory = function (configuration?: Configurat
 export class MgetDownloadStatusApi extends BaseAPI {
     /**
      * 
-     * @param {Filter | null} [filter] 
+     * @param {Array<Filter> | null} [filter] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MgetDownloadStatusApi
      */
-    public mgetDownloadStatus(filter?: Filter | null, options?: RawAxiosRequestConfig) {
+    public mgetDownloadStatus(filter?: Array<Filter> | null, options?: RawAxiosRequestConfig) {
         return MgetDownloadStatusApiFp(this.configuration).mgetDownloadStatus(filter, options).then((request) => request(this.axios, this.basePath));
     }
 }

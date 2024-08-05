@@ -1,14 +1,15 @@
 use axum::Json;
+use log::error;
+use pikpak_core::api::download_pause::ApiDownloadPauseReq;
 use serde::{Deserialize, Serialize};
 use utoipa::{ToResponse, ToSchema};
 
 use crate::extension::auth::AuthExtractor;
 
-use super::BaseResp;
+use super::{get_pikpak_client, BaseResp};
 
 #[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
 pub struct DownloadPauseReq {
-    path: String,
     file_id: String,
 }
 
@@ -34,6 +35,19 @@ pub async fn download_pause(
     AuthExtractor(token): AuthExtractor,
     Json(req): Json<DownloadPauseReq>,
 ) -> Result<Json<DownloadPauseResp>, BaseResp> {
+    let req = ApiDownloadPauseReq {
+        ident: token.into(),
+        file_id: req.file_id,
+    };
+
+    get_pikpak_client()
+        .download_pause(&req, None)
+        .await
+        .map_err(|e| {
+            error!("[download_pause] error: {:?}", e);
+            BaseResp::with_error(e)
+        })?;
+
     Ok(Json(DownloadPauseResp {
         base_resp: BaseResp::default(),
     }))

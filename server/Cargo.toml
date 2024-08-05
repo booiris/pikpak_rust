@@ -14,8 +14,8 @@ anyhow = { workspace = true }
 humantime = { workspace = true }
 tower = { workspace = true }
 tower-http = { workspace = true }
-utoipa = { workspace = true }
-utoipa-swagger-ui = { workspace = true }
+utoipa = { workspace = true, features = ["axum_extras"] }
+utoipa-swagger-ui = { workspace = true, features = ["axum"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 lazy_static = { workspace = true }
@@ -26,7 +26,7 @@ ring = { workspace = true }
 chrono = { workspace = true }
 parking_lot = { workspace = true }
 pikpak_core = { path = "../pikpak_core" }
-
+dotenv_codegen = { workspace = true }
 
 [features]
 __local_test = []
