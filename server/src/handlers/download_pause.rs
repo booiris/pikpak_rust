@@ -53,6 +53,7 @@ pub async fn download_pause(
     }))
 }
 
+#[cfg(feature = "utoipa")]
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(download_pause),

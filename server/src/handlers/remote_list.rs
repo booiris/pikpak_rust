@@ -97,6 +97,7 @@ pub async fn remote_list(
     }))
 }
 
+#[cfg(feature = "utoipa")]
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(remote_list),

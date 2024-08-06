@@ -94,8 +94,10 @@ where
     }
 }
 
+#[cfg(feature = "utoipa")]
 pub(crate) struct SecurityAddon;
 
+#[cfg(feature = "utoipa")]
 impl utoipa::Modify for SecurityAddon {
     fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
         let components = openapi.components.as_mut().unwrap(); // we can unwrap safely since there already is components registered.

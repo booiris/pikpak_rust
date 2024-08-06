@@ -17,12 +17,17 @@ use tower_http::{
     catch_panic::CatchPanicLayer,
     cors::{Any, CorsLayer},
 };
+
+#[cfg(feature = "utoipa")]
+use crate::handlers::ApiDoc;
+#[cfg(feature = "utoipa")]
 use utoipa::OpenApi;
+
+#[cfg(feature = "utoipa")]
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::handlers::{
-    download_begin::download_begin, login::login, remote_list::remote_list, ApiDoc,
-    PIKPAK_CORE_CLIENT,
+    download_begin::download_begin, login::login, remote_list::remote_list, PIKPAK_CORE_CLIENT,
 };
 
 mod extension;
@@ -63,9 +68,11 @@ pub async fn start_server(
                 .route("/download_remove", post(download_remove))
                 .route("/mget_download_status", get(mget_download_status)),
         )
-        .merge(SwaggerUi::new("/doc").url("/openapi.json", ApiDoc::openapi()))
         .layer(cors)
         .layer(CatchPanicLayer::new());
+
+    #[cfg(feature = "utoipa")]
+    let app = app.merge(SwaggerUi::new("/doc").url("/openapi.json", ApiDoc::openapi()));
 
     let addr = host.into() + ":" + port.into();
     let listener = tokio::net::TcpListener::bind(&addr)

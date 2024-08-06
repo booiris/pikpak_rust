@@ -58,6 +58,7 @@ pub async fn download_begin(
     }))
 }
 
+#[cfg(feature = "utoipa")]
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(download_begin),

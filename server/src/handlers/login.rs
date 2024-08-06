@@ -81,6 +81,7 @@ pub async fn login(Json(req): Json<LoginReq>) -> Result<Json<LoginResp>, BaseRes
     }))
 }
 
+#[cfg(feature = "utoipa")]
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(login),

@@ -8,7 +8,7 @@ use rand::{distributions::Alphanumeric, Rng};
 use serde::{Deserialize, Serialize};
 use utoipa::{ToResponse, ToSchema};
 
-use crate::{extension::auth::SecurityAddon, utils::token::Cipher};
+use crate::utils::token::Cipher;
 
 pub mod download_begin;
 pub mod download_pause;
@@ -71,8 +71,12 @@ pub(crate) fn get_pikpak_client() -> &'static PkiPakApiClient {
         .expect("pikpak core client not initialized")
 }
 
+#[cfg(feature = "utoipa")]
+use crate::extension::auth::SecurityAddon;
+#[cfg(feature = "utoipa")]
 use utoipa::OpenApi;
 
+#[cfg(feature = "utoipa")]
 #[derive(OpenApi)]
 #[openapi(
     nest(

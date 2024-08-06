@@ -40,6 +40,7 @@ pub async fn download_remove(
     }))
 }
 
+#[cfg(feature = "utoipa")]
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(download_remove),

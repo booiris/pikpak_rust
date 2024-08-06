@@ -73,11 +73,13 @@
     "[vue]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "rust-analyzer.check.features": [
-        "__local_test"
-    ],
+    // "rust-analyzer.check.features": [
+    //     "__local_test",
+    //     "utoipa"
+    // ],
     "rust-analyzer.cargo.features": [
-        "__local_test"
+        "__local_test",
+        "utoipa"
     ],
     "[dotenv]": {
         "editor.defaultFormatter": "foxundermoon.shell-format"

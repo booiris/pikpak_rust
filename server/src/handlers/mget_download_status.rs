@@ -134,6 +134,7 @@ pub async fn mget_download_status(
     }))
 }
 
+#[cfg(feature = "utoipa")]
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(mget_download_status),
