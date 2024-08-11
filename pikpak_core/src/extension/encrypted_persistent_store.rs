@@ -160,10 +160,11 @@ impl<
     }
 
     pub fn unlock_all(&self, decrypt_key: &str) -> AHashMap<K, Arc<RwLock<V>>> {
-        let data = self.data.lock();
         let mut res = AHashMap::new();
-        for k in data.keys() {
-            let d = self.get(k, decrypt_key);
+        let keys = self.data.lock().keys().cloned().collect::<Vec<_>>();
+
+        for k in keys {
+            let d = self.get(&k, decrypt_key);
             res.insert(k.clone(), d.clone());
         }
         res

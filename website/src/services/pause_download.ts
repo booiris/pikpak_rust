@@ -1,21 +1,21 @@
-import { Configuration, Filter, MgetDownloadStatusApi } from '@/api'
+import { Configuration, DownloadPauseApi } from '@/api'
 import { useBackendUrlStore } from '@/stores/backend_url'
 import { useTokenStore } from '@/stores/token'
 
-const client = new MgetDownloadStatusApi(
+const client = new DownloadPauseApi(
     new Configuration({
         basePath: useBackendUrlStore().storedUrl,
         accessToken: useTokenStore().storedToken
     })
 )
 
-export const mgetDownloadStatusApi = async (filter?: Filter[]) => {
-    return client.mgetDownloadStatus(
+export const pauseDownloadApi = async (id: string) => {
+    return client.downloadPause(
         {
-            filter
+            file_id: id
         },
         {
-            timeout: 2000
+            timeout: 4000
         }
     )
 }

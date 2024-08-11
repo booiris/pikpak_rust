@@ -11,6 +11,6 @@ const client = new RemoteListApi(
 
 export const remoteListApi = async (path: string) => {
     return client.remoteList(path, {
-        timeout: 4000
+        timeout: 10000
     })
 }

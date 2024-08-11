@@ -9,7 +9,7 @@ use axum::{
 
 use handlers::{
     download_pause::download_pause, download_remove::download_remove,
-    mget_download_status::mget_download_status,
+    download_resume::download_resume, mget_download_status::mget_download_status,
 };
 use log::{error, info};
 use pikpak_core::{PkiPakApiClient, PkiPakApiConfig};
@@ -41,6 +41,8 @@ pub async fn start_server(
     cache_dir: Option<PathBuf>,
     decrypt_key: String,
 ) -> Result<(), Error> {
+    info!("[rust pikpak server] starting server");
+
     PIKPAK_CORE_CLIENT
         .set(PkiPakApiClient::new(
             Some(PkiPakApiConfig { proxy, cache_dir }),
@@ -64,9 +66,10 @@ pub async fn start_server(
                 .route("/login", post(login))
                 .route("/remote_list", get(remote_list))
                 .route("/download_begin", post(download_begin))
+                .route("/download_resume", post(download_resume))
                 .route("/download_pause", post(download_pause))
                 .route("/download_remove", post(download_remove))
-                .route("/mget_download_status", get(mget_download_status)),
+                .route("/mget_download_status", post(mget_download_status)),
         )
         .layer(cors)
         .layer(CatchPanicLayer::new());

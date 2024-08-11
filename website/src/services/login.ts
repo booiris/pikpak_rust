@@ -7,6 +7,6 @@ const client = new LoginApi(new Configuration({ basePath: useBackendUrlStore().s
 export const loginApi = async (email: string, password: string) => {
     const req = { email, password } as LoginReq
     return client.login(req, {
-        timeout: 4000
+        timeout: 8000
     })
 }

@@ -1,11 +1,11 @@
 <template>
     <div class="main">
         <el-container class="main-container">
-            <el-header>
+            <el-header style="margin: 10px 5px">
                 <MainHeader />
             </el-header>
             <el-container>
-                <el-aside>
+                <el-aside width="200px">
                     <MainAside />
                 </el-aside>
 

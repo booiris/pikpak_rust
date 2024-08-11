@@ -135,13 +135,7 @@ export interface DownloadRemoveReq {
      * @type {boolean}
      * @memberof DownloadRemoveReq
      */
-    'is_remove_local_file': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof DownloadRemoveReq
-     */
-    'path': string;
+    'need_remove_file': boolean;
 }
 /**
  * 
@@ -159,6 +153,38 @@ export interface DownloadRemoveResp {
      * 
      * @type {string}
      * @memberof DownloadRemoveResp
+     */
+    'message': string;
+}
+/**
+ * 
+ * @export
+ * @interface DownloadResumeReq
+ */
+export interface DownloadResumeReq {
+    /**
+     * 
+     * @type {string}
+     * @memberof DownloadResumeReq
+     */
+    'file_id': string;
+}
+/**
+ * 
+ * @export
+ * @interface DownloadResumeResp
+ */
+export interface DownloadResumeResp {
+    /**
+     * 
+     * @type {number}
+     * @memberof DownloadResumeResp
+     */
+    'code': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DownloadResumeResp
      */
     'message': string;
 }
@@ -802,6 +828,116 @@ export class DownloadRemoveApi extends BaseAPI {
 
 
 /**
+ * DownloadResumeApi - axios parameter creator
+ * @export
+ */
+export const DownloadResumeApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {DownloadResumeReq} downloadResumeReq 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        downloadResume: async (downloadResumeReq: DownloadResumeReq, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'downloadResumeReq' is not null or undefined
+            assertParamExists('downloadResume', 'downloadResumeReq', downloadResumeReq)
+            const localVarPath = `/api/download_resume`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication jwt required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(downloadResumeReq, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * DownloadResumeApi - functional programming interface
+ * @export
+ */
+export const DownloadResumeApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = DownloadResumeApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {DownloadResumeReq} downloadResumeReq 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async downloadResume(downloadResumeReq: DownloadResumeReq, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DownloadResumeResp>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadResume(downloadResumeReq, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DownloadResumeApi.downloadResume']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * DownloadResumeApi - factory interface
+ * @export
+ */
+export const DownloadResumeApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = DownloadResumeApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {DownloadResumeReq} downloadResumeReq 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        downloadResume(downloadResumeReq: DownloadResumeReq, options?: any): AxiosPromise<DownloadResumeResp> {
+            return localVarFp.downloadResume(downloadResumeReq, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * DownloadResumeApi - object-oriented interface
+ * @export
+ * @class DownloadResumeApi
+ * @extends {BaseAPI}
+ */
+export class DownloadResumeApi extends BaseAPI {
+    /**
+     * 
+     * @param {DownloadResumeReq} downloadResumeReq 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DownloadResumeApi
+     */
+    public downloadResume(downloadResumeReq: DownloadResumeReq, options?: RawAxiosRequestConfig) {
+        return DownloadResumeApiFp(this.configuration).downloadResume(downloadResumeReq, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
  * LoginApi - axios parameter creator
  * @export
  */
@@ -915,11 +1051,13 @@ export const MgetDownloadStatusApiAxiosParamCreator = function (configuration?: 
     return {
         /**
          * 
-         * @param {Array<Filter> | null} [filter] 
+         * @param {MgetDownloadStatusReq} mgetDownloadStatusReq 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        mgetDownloadStatus: async (filter?: Array<Filter> | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        mgetDownloadStatus: async (mgetDownloadStatusReq: MgetDownloadStatusReq, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'mgetDownloadStatusReq' is not null or undefined
+            assertParamExists('mgetDownloadStatus', 'mgetDownloadStatusReq', mgetDownloadStatusReq)
             const localVarPath = `/api/mget_download_status`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -928,7 +1066,7 @@ export const MgetDownloadStatusApiAxiosParamCreator = function (configuration?: 
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -936,15 +1074,14 @@ export const MgetDownloadStatusApiAxiosParamCreator = function (configuration?: 
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (filter) {
-                localVarQueryParameter['filter'] = filter;
-            }
-
 
     
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(mgetDownloadStatusReq, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -963,12 +1100,12 @@ export const MgetDownloadStatusApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {Array<Filter> | null} [filter] 
+         * @param {MgetDownloadStatusReq} mgetDownloadStatusReq 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async mgetDownloadStatus(filter?: Array<Filter> | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DownloadPauseResp>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.mgetDownloadStatus(filter, options);
+        async mgetDownloadStatus(mgetDownloadStatusReq: MgetDownloadStatusReq, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MgetDownloadStatusResp>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.mgetDownloadStatus(mgetDownloadStatusReq, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['MgetDownloadStatusApi.mgetDownloadStatus']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -985,12 +1122,12 @@ export const MgetDownloadStatusApiFactory = function (configuration?: Configurat
     return {
         /**
          * 
-         * @param {Array<Filter> | null} [filter] 
+         * @param {MgetDownloadStatusReq} mgetDownloadStatusReq 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        mgetDownloadStatus(filter?: Array<Filter> | null, options?: any): AxiosPromise<DownloadPauseResp> {
-            return localVarFp.mgetDownloadStatus(filter, options).then((request) => request(axios, basePath));
+        mgetDownloadStatus(mgetDownloadStatusReq: MgetDownloadStatusReq, options?: any): AxiosPromise<MgetDownloadStatusResp> {
+            return localVarFp.mgetDownloadStatus(mgetDownloadStatusReq, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1004,13 +1141,13 @@ export const MgetDownloadStatusApiFactory = function (configuration?: Configurat
 export class MgetDownloadStatusApi extends BaseAPI {
     /**
      * 
-     * @param {Array<Filter> | null} [filter] 
+     * @param {MgetDownloadStatusReq} mgetDownloadStatusReq 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MgetDownloadStatusApi
      */
-    public mgetDownloadStatus(filter?: Array<Filter> | null, options?: RawAxiosRequestConfig) {
-        return MgetDownloadStatusApiFp(this.configuration).mgetDownloadStatus(filter, options).then((request) => request(this.axios, this.basePath));
+    public mgetDownloadStatus(mgetDownloadStatusReq: MgetDownloadStatusReq, options?: RawAxiosRequestConfig) {
+        return MgetDownloadStatusApiFp(this.configuration).mgetDownloadStatus(mgetDownloadStatusReq, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

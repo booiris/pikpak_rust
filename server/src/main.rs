@@ -7,7 +7,7 @@ async fn main() -> Result<(), Error> {
     setup_server_logger(log::LevelFilter::Debug)?;
     start_server(
         "0.0.0.0",
-        "22522",
+        "22523",
         None,
         None,
         dotenv_codegen::dotenv!("decrypt_key").into(),

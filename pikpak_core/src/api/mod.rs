@@ -6,6 +6,8 @@ use crate::store::UserName;
 
 pub mod download;
 pub mod download_pause;
+pub mod download_remove;
+pub mod download_resume;
 pub mod login;
 pub mod mget_download_status;
 pub mod remote_list;

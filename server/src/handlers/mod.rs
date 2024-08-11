@@ -13,6 +13,7 @@ use crate::utils::token::Cipher;
 pub mod download_begin;
 pub mod download_pause;
 pub mod download_remove;
+pub mod download_resume;
 pub mod login;
 pub mod mget_download_status;
 pub mod remote_list;
@@ -85,6 +86,7 @@ use utoipa::OpenApi;
         (path = "/api/download_begin", api = download_begin::DownloadBeginApi),
         (path = "/api/download_pause", api = download_pause::DownloadPauseApi),
         (path = "/api/download_remove", api = download_remove::DownloadRemoveApi),
+        (path = "/api/download_resume", api = download_resume::DownloadResumeApi),
         (path = "/api/mget_download_status", api = mget_download_status::MgetDownloadStatusApi)
     ),
     modifiers(&SecurityAddon)

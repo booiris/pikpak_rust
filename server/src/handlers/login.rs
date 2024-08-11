@@ -36,7 +36,7 @@ pub struct LoginResp {
     )
 )]
 pub async fn login(Json(req): Json<LoginReq>) -> Result<Json<LoginResp>, BaseResp> {
-    log::trace!("[login] request: {:?}", req);
+    log::debug!("[login] request: {:?}", req);
 
     let expiration = Utc::now() + Duration::days(1);
     get_pikpak_client()

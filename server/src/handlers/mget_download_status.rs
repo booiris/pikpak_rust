@@ -1,4 +1,4 @@
-use axum::{extract::Query, Json};
+use axum::Json;
 use log::error;
 use pikpak_core::{
     api::mget_download_status::ApiMgetDownloadStatusReq,
@@ -96,22 +96,20 @@ pub struct MgetDownloadStatusResp {
 }
 
 #[utoipa::path(
-    get,
+    post,
     path = "",
-    params (
-        MgetDownloadStatusReq
-    ),
+    request_body = MgetDownloadStatusReq,
     security(
         ("jwt"=[])
     ),
     responses(
-        (status = 200, description = "success", body = DownloadPauseResp),
+        (status = 200, description = "success", body = MgetDownloadStatusResp),
         (status = 400, description = "request invalid", body = BaseResp)
     )
 )]
 pub async fn mget_download_status(
     AuthExtractor(token): AuthExtractor,
-    Query(req): Query<MgetDownloadStatusReq>,
+    Json(req): Json<MgetDownloadStatusReq>,
 ) -> Result<Json<MgetDownloadStatusResp>, BaseResp> {
     let req = ApiMgetDownloadStatusReq {
         ident: token.into(),

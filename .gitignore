@@ -2,3 +2,4 @@
 openapi.json
 **/.env
 **/cache
+**/**.mp4

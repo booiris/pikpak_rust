@@ -1,16 +1,17 @@
 use axum::Json;
+use log::{error, info};
+use pikpak_core::api::download_remove::ApiDownloadRemoveReq;
 use serde::{Deserialize, Serialize};
 use utoipa::{ToResponse, ToSchema};
 
 use crate::extension::auth::AuthExtractor;
 
-use super::BaseResp;
+use super::{get_pikpak_client, BaseResp};
 
 #[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
 pub struct DownloadRemoveReq {
-    path: String,
     file_id: String,
-    is_remove_local_file: bool,
+    need_remove_file: bool,
 }
 
 #[derive(Serialize, Deserialize, ToSchema, ToResponse)]
@@ -32,9 +33,25 @@ pub struct DownloadRemoveResp {
     )
 )]
 pub async fn download_remove(
-    AuthExtractor(_token): AuthExtractor,
-    Json(_req): Json<DownloadRemoveReq>,
+    AuthExtractor(token): AuthExtractor,
+    Json(req): Json<DownloadRemoveReq>,
 ) -> Result<Json<DownloadRemoveResp>, BaseResp> {
+    info!("[download_remove] req: {:?}", req);
+
+    let req = ApiDownloadRemoveReq {
+        ident: token.into(),
+        file_id: req.file_id,
+        need_remove_file: req.need_remove_file,
+    };
+
+    get_pikpak_client()
+        .download_remove(&req, None)
+        .await
+        .map_err(|e| {
+            error!("[download_remove] error: {:?}", e);
+            BaseResp::with_error(e)
+        })?;
+
     Ok(Json(DownloadRemoveResp {
         base_resp: BaseResp::default(),
     }))

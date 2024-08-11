@@ -31,9 +31,10 @@
         style="width: 100%"
         :cell-style="cellStyle"
         @row-click="handleRawClick"
+        max-height="500px"
     >
-        <el-table-column prop="fileName" label="Name" width="500" show-overflow-tooltip />
-        <el-table-column prop="size" label="Size" width="180" show-overflow-tooltip />
+        <el-table-column prop="fileName" label="Name" width="650" show-overflow-tooltip />
+        <el-table-column prop="size" label="Size" width="150" show-overflow-tooltip />
         <el-table-column prop="updateTime" label="Update Time" show-overflow-tooltip />
     </el-table>
 </template>
@@ -132,20 +133,12 @@ function handleRawClick(row: tableDataType) {
             type: 'info'
         })
             .then(async () => {
-                await downloadBeginApi(row.id, './', 'test.mp4')
-                    .then((data) => {
-                        if (data.data.code == 1) {
-                            ElMessage({
-                                type: 'info',
-                                message: '"' + row.fileName + '" Already Download'
-                            })
-                            return
-                        } else {
-                            ElMessage({
-                                type: 'success',
-                                message: '"' + row.fileName + '" Download Start'
-                            })
-                        }
+                await downloadBeginApi(row.id, './', row.fileName)
+                    .then((_) => {
+                        ElMessage({
+                            type: 'success',
+                            message: '"' + row.fileName + '" Download Start'
+                        })
                     })
                     .catch((err: AxiosError) => {
                         console.error(err)

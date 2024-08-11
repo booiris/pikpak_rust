@@ -5,7 +5,7 @@ use std::{
 };
 
 use ahash::AHashMap;
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use atomic_float::AtomicF64;
 use futures_util::StreamExt;
 use humansize::DECIMAL;
@@ -23,6 +23,7 @@ use tokio_util::sync::CancellationToken;
 use crate::{
     api::Ident,
     error::Error,
+    extension::api_option::ApiOption,
     store::{download_status_store::PikPakDownloadInfo, UserName},
     PkiPakApiClient, USER_AGENT,
 };
@@ -88,8 +89,14 @@ pub enum DownloadStatusKind {
 }
 
 impl PartialEq for DownloadStatusKind {
-    fn eq(&self, _other: &Self) -> bool {
-        matches!(self, _other)
+    fn eq(&self, other: &Self) -> bool {
+        match self {
+            DownloadStatusKind::HasError(_) => matches!(other, DownloadStatusKind::HasError(_)),
+            DownloadStatusKind::Downloading => matches!(other, DownloadStatusKind::Downloading),
+            DownloadStatusKind::Paused => matches!(other, DownloadStatusKind::Paused),
+            DownloadStatusKind::Completed => matches!(other, DownloadStatusKind::Completed),
+            DownloadStatusKind::Waiting => matches!(other, DownloadStatusKind::Waiting),
+        }
     }
 }
 
@@ -181,6 +188,24 @@ impl Downloader {
                 .iter()
                 .map(|(file_id, status)| (file_id.clone(), status.display()))
                 .collect()
+        }
+    }
+
+    pub fn resume_download(&self, file_id: &FileID, id: &Ident) -> Result<(), Error> {
+        if let Some(info) = self
+            .file_status
+            .get(&id.username)
+            .read()
+            .download_info
+            .read()
+            .get(file_id)
+        {
+            let cancel = CancellationToken::new();
+            self.run_downloader(info, cancel.clone());
+            self.runner_control.lock().insert(file_id.clone(), cancel);
+            Ok(())
+        } else {
+            Err(Error::RequestError(anyhow!("file id missing")))
         }
     }
 
@@ -296,12 +321,23 @@ impl Downloader {
             let out_cancel = cancel.clone();
 
             loop {
-                let info = match client.api(&id, &None).get_file_by_id(&file_id).await {
+                let info = match client
+                    .api(
+                        &id,
+                        &Some(ApiOption {
+                            retry_times: Some(3),
+                            retry_sleep_duration: Some(Duration::from_secs(1)),
+                            timeout: Some(Duration::from_secs(10)),
+                        }),
+                    )
+                    .get_file_by_id(&file_id)
+                    .await
+                {
                     Ok(x) => x,
                     Err(e) => {
                         log::error!("[download] get url failed, error: {:?}", e);
-                        *status.write() = DownloadStatusKind::HasError(format!("{:?}", e));
-                        return;
+                        tokio::time::sleep(Duration::from_secs(2)).await;
+                        continue;
                     }
                 };
 
@@ -314,10 +350,12 @@ impl Downloader {
                     current_speed: &current_speed,
                     downloaded_time: &downloaded_time,
                     cancel: cancel.clone(),
+                    remote_file_size: info.size.parse().unwrap(),
                 };
 
                 select! {
                     _ = out_cancel.cancelled() => {
+                        current_speed.store(0.0, std::sync::atomic::Ordering::Relaxed);
                         *status.write() = DownloadStatusKind::Paused;
                         break;
                     }
@@ -325,11 +363,15 @@ impl Downloader {
                         p
                     ) => {
                         match res{
-                            Ok(()) => {
-                                *status.write() = DownloadStatusKind::Completed;
-                                break;
+                            Ok(is_finish) => {
+                                if is_finish{
+                                    info!("download completed, file: {:?}", download_to_local_path);
+                                    *status.write() = DownloadStatusKind::Completed;
+                                    break;
+                                }
                             }
                             Err(e) => {
+                                current_speed.store(0.0, std::sync::atomic::Ordering::Relaxed);
                                 log::error!("[download] download failed, error: {:?}", e);
 
                                 if matches!(e, DownloadError::ResumeFailed) {
@@ -364,16 +406,27 @@ impl Downloader {
         }
     }
 
-    pub fn remove_download(&self, file_id: &FileID, id: &Ident) {
+    pub async fn remove_download(&self, file_id: &FileID, id: &Ident, need_remove_file: bool) {
         if let Some(x) = self.runner_control.lock().remove(file_id) {
             x.cancel()
         }
-        self.file_status
+
+        let x = self
+            .file_status
             .get(&id.username)
             .read()
             .download_info
             .write()
             .remove(file_id);
+
+        if let Some(x) = x {
+            if need_remove_file {
+                info!("remove file: {:?}", x.download_to_local_path);
+                if let Err(e) = tokio::fs::remove_file(&x.download_to_local_path).await {
+                    log::error!("[download] remove file failed, error: {:?}", e);
+                }
+            }
+        }
     }
 }
 
@@ -393,10 +446,23 @@ struct DownloadUrlParam<'a> {
     current_speed: &'a AtomicF64,
     downloaded_time: &'a Mutex<Duration>,
     cancel: CancellationToken,
+    remote_file_size: u64,
 }
 
-async fn download_url(p: DownloadUrlParam<'_>) -> Result<(), DownloadError> {
+async fn download_url(p: DownloadUrlParam<'_>) -> Result<bool, DownloadError> {
     let size = p.out_file.metadata().await.unwrap().len();
+
+    if size == p.remote_file_size {
+        return Ok(true);
+    }
+
+    if size > p.remote_file_size {
+        panic!(
+            "file size invalid, local: {}, remote: {}",
+            size, p.remote_file_size
+        );
+    }
+
     p.downloaded.store(size, SeqCst);
     let mut req = p
         .client
@@ -430,18 +496,23 @@ async fn download_url(p: DownloadUrlParam<'_>) -> Result<(), DownloadError> {
         let time_start = tokio::time::Instant::now();
         select! {
             _ = p.cancel.cancelled() => {
-                return Ok(());
+                return Ok(false);
             }
             item = stream.next() => {
                 match item {
                     Some(item) => {
-                        if let Ok(item) = item {
-                            let copy_cnt = tokio::io::copy(&mut item.as_ref(), p.out_file).await.context("copy error").map_err(|e| DownloadError::DownloadError(format!("{:?}", e)))?;
-                            let time_end = tokio::time::Instant::now();
-                            let time_cost = time_end - time_start;
-                            *p.downloaded_time.lock() += time_cost;
-                            p.current_speed.store(copy_cnt as f64 / time_cost.as_secs_f64(), std::sync::atomic::Ordering::Relaxed);
-                            p.downloaded.fetch_add(copy_cnt, Relaxed);
+                        match item {
+                            Ok(item) => {
+                                let copy_cnt = tokio::io::copy(&mut item.as_ref(), p.out_file).await.context("copy error").map_err(|e| DownloadError::DownloadError(format!("{:?}", e)))?;
+                                let time_end = tokio::time::Instant::now();
+                                let time_cost = time_end - time_start;
+                                *p.downloaded_time.lock() += time_cost;
+                                p.current_speed.store(copy_cnt as f64 / time_cost.as_secs_f64(), std::sync::atomic::Ordering::Relaxed);
+                                p.downloaded.fetch_add(copy_cnt, Relaxed);
+                            },
+                            Err(e) => {
+                                return Err(DownloadError::DownloadError(format!("stream error!: {:?}",e)));
+                            }
                         }
                     },
                     None => {
@@ -453,7 +524,7 @@ async fn download_url(p: DownloadUrlParam<'_>) -> Result<(), DownloadError> {
         }
     }
 
-    Ok(())
+    Ok(true)
 }
 
 #[cfg(test)]
@@ -512,7 +583,7 @@ mod test {
             panic!("pause status invalid");
         }
 
-        downloader.remove_download(&file_id, &ident);
+        downloader.remove_download(&file_id, &ident, false).await;
 
         tokio::time::sleep(Duration::from_secs(1)).await;
 
