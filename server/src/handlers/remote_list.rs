@@ -1,7 +1,7 @@
 use axum::{extract::Query, Json};
-use log::error;
 use pikpak_core::{api::remote_list::ApiRemoteListReq, core::file::FileStatus};
 use serde::{Deserialize, Serialize};
+use tracing::error;
 use utoipa::{IntoParams, ToResponse, ToSchema};
 
 use crate::extension::auth::AuthExtractor;

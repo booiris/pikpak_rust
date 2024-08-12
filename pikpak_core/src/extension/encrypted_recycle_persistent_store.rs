@@ -16,6 +16,7 @@ use ring::{
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use tokio_util::sync::CancellationToken;
+use tracing::{error, info};
 
 use super::auto_recycle_store::AutoRecycleStore;
 use super::auto_recycle_store::IntoAutoRecycleStoreElem;
@@ -51,12 +52,12 @@ impl<
             .and_then(|x| {
                 let data = std::fs::read(x.clone())
                     .map_err(|e| {
-                        log::error!("Failed to read origin file: {} path: {}", e, x.display());
+                        error!("Failed to read origin file: {} path: {}", e, x.display());
                     })
                     .ok()?;
                 let data = bincode::deserialize(&data)
                     .map_err(|e| {
-                        log::error!(
+                        error!(
                             "Failed to deserialize origin file: {} path: {}",
                             e,
                             x.display()
@@ -157,7 +158,7 @@ impl<
                     };
                 }
                 Err(e) => {
-                    log::error!("[update_decrypt_key] Failed to decrypt data: {:?}", e);
+                    error!("[update_decrypt_key] Failed to decrypt data: {:?}", e);
                 }
             },
             MemoryElem::Decrypted { key: _, data } => {
@@ -214,11 +215,11 @@ impl<
                     if let Err(e) =
                         tokio::fs::write(persistence_file.as_ref().unwrap(), &data).await
                     {
-                        log::error!("Failed to write persistence file: {}", e);
+                        error!("Failed to write persistence file: {}", e);
                     }
                 }
             }
-            log::info!("backup task canceled");
+            info!("backup task canceled");
         });
     }
 }
@@ -249,7 +250,7 @@ pub(crate) fn decrypt<T: Default + DeserializeOwned>(data: &mut [u8], key: &[u8]
     let unbound_key = match aead::UnboundKey::new(&aead::AES_256_GCM, key.as_ref()) {
         Ok(k) => k,
         Err(e) => {
-            log::error!("[decrypt] Failed to create unbound key: {}", e);
+            error!("[decrypt] Failed to create unbound key: {}", e);
             return Err(());
         }
     };
@@ -259,7 +260,7 @@ pub(crate) fn decrypt<T: Default + DeserializeOwned>(data: &mut [u8], key: &[u8]
     let data = match open_key.open_in_place(Aad::empty(), data) {
         Ok(d) => d.to_vec(),
         Err(e) => {
-            log::error!("[decrypt] Failed to decrypt data: {}", e);
+            error!("[decrypt] Failed to decrypt data: {}", e);
             return Err(());
         }
     };
@@ -275,7 +276,7 @@ pub(crate) fn encrypt<T: Serialize>(data: &T, key: &[u8]) -> Vec<u8> {
     let unbound_key = match aead::UnboundKey::new(&aead::AES_256_GCM, key.as_ref()) {
         Ok(k) => k,
         Err(e) => {
-            log::error!("[encrypt] Failed to create unbound key: {}", e);
+            error!("[encrypt] Failed to create unbound key: {}", e);
             return Vec::new();
         }
     };
@@ -285,7 +286,7 @@ pub(crate) fn encrypt<T: Serialize>(data: &T, key: &[u8]) -> Vec<u8> {
     let mut data = match bincode::serialize(data) {
         Ok(d) => d,
         Err(e) => {
-            log::error!("[encrypt] Failed to serialize data: {}", e);
+            error!("[encrypt] Failed to serialize data: {}", e);
             return Vec::new();
         }
     };
@@ -293,7 +294,7 @@ pub(crate) fn encrypt<T: Serialize>(data: &T, key: &[u8]) -> Vec<u8> {
     match sealing_key.seal_in_place_append_tag(Aad::empty(), &mut data) {
         Ok(_) => data,
         Err(e) => {
-            log::error!("Failed to encrypt data: {}", e);
+            error!("Failed to encrypt data: {}", e);
             Vec::new()
         }
     }

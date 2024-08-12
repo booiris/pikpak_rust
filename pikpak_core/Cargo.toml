@@ -6,10 +6,10 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-tokio = { workspace = true }
-log = { workspace = true }
-reqwest = { workspace = true }
-serde = { workspace = true, features = ["rc"] }
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }
+reqwest = { workspace = true, features = ["json", "stream"] }
+serde = { workspace = true, features = ["rc", "derive"] }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 rand = { workspace = true }
@@ -18,7 +18,7 @@ chrono = { workspace = true }
 oauth2 = { workspace = true }
 anyhow = { workspace = true }
 parking_lot = { workspace = true, features = ["serde"] }
-ahash = { workspace = true }
+ahash = { workspace = true, features = ["serde"] }
 lazy_static = { workspace = true }
 path-clean = { workspace = true }
 bincode = { workspace = true }
@@ -29,9 +29,10 @@ futures-util = { workspace = true }
 atomic_float = { workspace = true }
 
 [dev-dependencies]
-env_logger = { workspace = true }
 ctor = { workspace = true }
 dotenv_codegen = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+tracing-error = { workspace = true }
 
 [lints]
 workspace = true

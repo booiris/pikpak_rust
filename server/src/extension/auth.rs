@@ -27,7 +27,7 @@ where
         ))?;
 
         let auth = auth.to_str().map_err(|e| {
-            log::error!("Failed to parse `AUTHORIZATION` header: {}", e);
+            tracing::error!("Failed to parse `AUTHORIZATION` header: {}", e);
             (
                 StatusCode::BAD_REQUEST,
                 BaseResp::with_error(format!(

@@ -23,28 +23,25 @@
             </el-table-column>
             <el-table-column label="speed" prop="current_speed" show-overflow-tooltip />
             <el-table-column label="downloaded" prop="downloaded" show-overflow-tooltip />
-            <el-table-column label="size" prop="human_total" show-overflow-tooltip />
-            <el-table-column label="download time" prop="download_time" show-overflow-tooltip />
-            <el-table-column label="action" width="100">
+            <el-table-column label="total" prop="human_total" show-overflow-tooltip />
+            <el-table-column label="duration" prop="download_time" show-overflow-tooltip />
+            <el-table-column label="" width="200">
                 <template #default="scope">
                     <el-button
                         v-if="isError(scope.row.status) || scope.row.status == 'Paused'"
                         type="primary"
                         :icon="VideoPlay"
-                        circle
                         @click="handleResume(scope.row.id)"
                     />
                     <el-button
                         v-else
                         type="primary"
                         :icon="VideoPause"
-                        circle
                         @click="handlePause(scope.row.id)"
                     />
                     <el-button
                         type="danger"
                         :icon="Delete"
-                        circle
                         @click="handleDelete(scope.row.id, scope.row.fileName)"
                     ></el-button>
                 </template>
@@ -117,7 +114,7 @@ async function get_downloading_status(): Promise<tableDataType[]> {
                     fileName: item.remote_file_name,
                     total: item.total,
                     now: item.downloaded,
-                    current_speed: prettyBytes((item.current_speed / 1000) * 8) + '/s',
+                    current_speed: prettyBytes(item.current_speed / 10 ) + '/s',
                     download_time: humanizer.humanize(item.downloaded_time * 1000, {
                         language: 'shortEn'
                     }),

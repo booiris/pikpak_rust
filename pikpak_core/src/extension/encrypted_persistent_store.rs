@@ -9,6 +9,7 @@ use parking_lot::{Mutex, RwLock};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use tokio_util::sync::CancellationToken;
+use tracing::{error, info};
 
 use crate::extension::encrypted_recycle_persistent_store::encrypt;
 
@@ -39,12 +40,12 @@ impl<
             .and_then(|x| {
                 let data = std::fs::read(x.clone())
                     .map_err(|e| {
-                        log::error!("Failed to read origin file: {} path: {}", e, x.display());
+                        error!("Failed to read origin file: {} path: {}", e, x.display());
                     })
                     .ok()?;
                 let data = bincode::deserialize(&data)
                     .map_err(|e| {
-                        log::error!(
+                        error!(
                             "Failed to deserialize origin file: {} path: {}",
                             e,
                             x.display()
@@ -146,7 +147,7 @@ impl<
                     };
                 }
                 Err(e) => {
-                    log::error!("[update_decrypt_key] Failed to decrypt data: {:?}", e);
+                    error!("[update_decrypt_key] Failed to decrypt data: {:?}", e);
                 }
             },
             MemoryElem::Decrypted { key: _, data } => {
@@ -212,11 +213,11 @@ impl<
                     if let Err(e) =
                         tokio::fs::write(persistence_file.as_ref().unwrap(), &data).await
                     {
-                        log::error!("Failed to write persistence file: {}", e);
+                        error!("Failed to write persistence file: {}", e);
                     }
                 }
             }
-            log::info!("backup task canceled");
+            info!("backup task canceled");
         });
     }
 }

@@ -1,6 +1,6 @@
-use log::trace;
 use reqwest::RequestBuilder;
 use serde::de::DeserializeOwned;
+use tracing::trace;
 
 use crate::{
     api::{Ident, RespWrapper},

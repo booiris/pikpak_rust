@@ -108,16 +108,24 @@ mod test {
     use std::sync::OnceLock;
 
     use dotenv_codegen::dotenv;
+    use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
     use crate::api::Ident;
 
     #[ctor::ctor]
     fn init_test() {
-        env_logger::builder()
-            .filter_level(log::LevelFilter::Debug)
-            .is_test(true)
-            .try_init()
-            .unwrap();
+        let env_filter = tracing_subscriber::EnvFilter::try_from_default_env()
+            .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("debug"));
+
+        let formatting_layer = tracing_subscriber::fmt::layer()
+            .pretty()
+            .with_writer(std::io::stderr);
+
+        tracing_subscriber::Registry::default()
+            .with(env_filter)
+            .with(tracing_error::ErrorLayer::default())
+            .with(formatting_layer)
+            .init();
     }
 
     pub fn test_client() -> &'static super::PkiPakApiClient {

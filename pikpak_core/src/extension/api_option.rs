@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use reqwest::RequestBuilder;
+use tracing::warn;
 
 use crate::{core::ApiClient, error::Error};
 
@@ -67,7 +68,7 @@ impl ApiSend for RequestBuilder {
                         Ok(resp) => return Ok(resp),
                         Err(e) => {
                             tokio::time::sleep(sleep_time).await;
-                            log::warn!("request failed, err: {}, retry times: {}", e, cnt + 1);
+                            warn!("request failed, err: {}, retry times: {}", e, cnt + 1);
                             cnt += 1;
                         }
                     }
@@ -89,7 +90,7 @@ impl ApiSend for RequestBuilder {
                                 return Err(Error::NetworkError(e));
                             }
                             tokio::time::sleep(sleep_time).await;
-                            log::warn!("request failed, err: {}, retry times: {}", e, i + 1);
+                            warn!("request failed, err: {}, retry times: {}", e, i + 1);
                         }
                     }
                 }

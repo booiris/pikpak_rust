@@ -1,10 +1,10 @@
 use axum::Json;
-use log::error;
 use pikpak_core::{
     api::mget_download_status::ApiMgetDownloadStatusReq,
     core::downloader::{DownloadStatus, DownloadStatusKind},
 };
 use serde::{Deserialize, Serialize};
+use tracing::error;
 use utoipa::{IntoParams, ToResponse, ToSchema};
 
 use crate::extension::auth::AuthExtractor;

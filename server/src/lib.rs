@@ -11,12 +11,12 @@ use handlers::{
     download_pause::download_pause, download_remove::download_remove,
     download_resume::download_resume, mget_download_status::mget_download_status,
 };
-use log::{error, info};
 use pikpak_core::{PkiPakApiClient, PkiPakApiConfig};
 use tower_http::{
     catch_panic::CatchPanicLayer,
     cors::{Any, CorsLayer},
 };
+use tracing::{error, info};
 
 #[cfg(feature = "utoipa")]
 use crate::handlers::ApiDoc;

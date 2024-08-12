@@ -4,6 +4,7 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use pikpak_core::api::login::ApiLoginReq;
 use serde::{Deserialize, Serialize};
+use tracing::{debug, error};
 use utoipa::{ToResponse, ToSchema};
 
 use crate::{
@@ -36,7 +37,7 @@ pub struct LoginResp {
     )
 )]
 pub async fn login(Json(req): Json<LoginReq>) -> Result<Json<LoginResp>, BaseResp> {
-    log::debug!("[login] request: {:?}", req);
+    debug!("[login] request: {:?}", req);
 
     let expiration = Utc::now() + Duration::days(1);
     get_pikpak_client()
@@ -46,7 +47,7 @@ pub async fn login(Json(req): Json<LoginReq>) -> Result<Json<LoginResp>, BaseRes
         })
         .await
         .map_err(|e| {
-            log::error!("[login] login error: {}", e);
+            error!("[login] login error: {}", e);
             BaseResp::with_error(e)
         })?;
     let token_data = TokenData {
@@ -54,11 +55,11 @@ pub async fn login(Json(req): Json<LoginReq>) -> Result<Json<LoginResp>, BaseRes
         password: req.password,
     };
     let token_data = serde_json::to_vec(&token_data).map_err(|e| {
-        log::error!("[login] serialize token error: {}", e);
+        error!("[login] serialize token error: {}", e);
         BaseResp::with_error(e)
     })?;
     let encrypted_token_data = CIPHER.encrypt(&token_data).map_err(|e| {
-        log::error!("[login] encrypt token error: {}", e);
+        error!("[login] encrypt token error: {}", e);
         BaseResp::with_error(e)
     })?;
     let token = BASE64_STANDARD.encode(encrypted_token_data);
@@ -71,7 +72,7 @@ pub async fn login(Json(req): Json<LoginReq>) -> Result<Json<LoginResp>, BaseRes
         &EncodingKey::from_secret(JWT_SECRET.as_ref()),
     )
     .map_err(|e| {
-        log::error!("[login] encode jwt error: {}", e);
+        error!("[login] encode jwt error: {}", e);
         BaseResp::with_error(e)
     })?;
 

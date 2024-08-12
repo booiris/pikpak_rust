@@ -1,8 +1,8 @@
 use anyhow::Context;
-use log::{debug, trace};
 use reqwest::header::HeaderMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use tracing::{debug, trace};
 
 use crate::{
     error::Error, extension::auto_recycle_store::IntoAutoRecycleStoreElem, utils::path::slash,
@@ -174,7 +174,7 @@ mod test {
     use super::*;
     use crate::test::{test_client, test_ident};
     use dotenv_codegen::dotenv;
-    use log::debug;
+    use tracing::debug;
 
     #[cfg(feature = "__local_test")]
     #[tokio::test]

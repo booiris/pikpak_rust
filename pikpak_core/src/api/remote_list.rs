@@ -35,7 +35,7 @@ impl PkiPakApiClient {
 #[cfg(test)]
 mod test {
     use super::*;
-    use log::debug;
+    use tracing::debug;
 
     use crate::test::{test_client, test_ident};
 

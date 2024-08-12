@@ -5,20 +5,15 @@
     <span v-else>
         <el-empty v-if="tableData.length === 0" description="No Downloaded Task" />
         <el-table v-else :data="tableData" style="width: 100%">
-            <el-table-column prop="fileName" label="Name" width="600" show-overflow-tooltip />
-            <el-table-column prop="human_total" label="size" width="200" show-overflow-tooltip />
-            <el-table-column
-                prop="download_time"
-                label="download time"
-                width="200"
-                show-overflow-tooltip
-            />
-            <el-table-column label="action">
+            <el-table-column prop="fileName" label="Name" width="500" show-overflow-tooltip />
+            <el-table-column prop="human_total" label="total" show-overflow-tooltip />
+            <el-table-column prop="avg_speed" label="avg speed" show-overflow-tooltip />
+            <el-table-column prop="download_time" label="duration" show-overflow-tooltip />
+            <el-table-column label="">
                 <template #default="scope">
                     <el-button
                         type="danger"
                         :icon="Delete"
-                        circle
                         @click="handleDelete(scope.row.id, scope.row.fileName)"
                     ></el-button>
                 </template>
@@ -48,6 +43,7 @@ interface tableDataType {
     download_time: string
     status: string
     id: string
+    avg_speed: string
 }
 const tableData = reactive<tableDataType[]>([])
 const tableLoading = ref(true)
@@ -83,7 +79,8 @@ async function get_downloaded_status(): Promise<tableDataType[]> {
                     }),
                     human_total: prettyBytes(item.total),
                     status: item.status.toString(),
-                    id: item.file_id
+                    id: item.file_id,
+                    avg_speed: prettyBytes(item.total / item.downloaded_time) + '/s'
                 })
             })
         })

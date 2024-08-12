@@ -1,7 +1,7 @@
 use axum::Json;
-use log::error;
 use pikpak_core::api::download_pause::ApiDownloadPauseReq;
 use serde::{Deserialize, Serialize};
+use tracing::error;
 use utoipa::{ToResponse, ToSchema};
 
 use crate::extension::auth::AuthExtractor;

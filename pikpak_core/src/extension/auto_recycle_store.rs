@@ -6,6 +6,7 @@ use chrono::{DateTime, Utc};
 use parking_lot::{MappedMutexGuard, Mutex, MutexGuard};
 use serde::{Deserialize, Serialize};
 use tokio_util::sync::CancellationToken;
+use tracing::info;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AutoRecycleStore<K: Hash + Eq + PartialEq, T> {
@@ -101,7 +102,7 @@ impl<K: Hash + Eq + PartialEq + Send + 'static, T: Send + 'static> AutoRecycleSt
                 let mut data = data.lock();
                 data.retain(|_, v| v.recycle_at > Utc::now());
             }
-            log::info!("AutoRecycleStore recycle task exit");
+            info!("AutoRecycleStore recycle task exit");
         });
     }
 }

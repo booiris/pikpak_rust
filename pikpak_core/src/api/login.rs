@@ -1,9 +1,9 @@
 use std::time::Duration;
 
-use log::{error, trace};
 use oauth2::{
     reqwest::async_http_client, ResourceOwnerPassword, ResourceOwnerUsername, TokenResponse,
 };
+use tracing::{error, trace};
 
 use crate::{api::Ident, core::token::AUTH_TOKEN, error::Error, PkiPakApiClient};
 
@@ -61,7 +61,7 @@ impl PkiPakApiClient {
 mod test {
     use super::*;
     use dotenv_codegen::dotenv;
-    use log::info;
+    use tracing::info;
 
     #[cfg(feature = "__local_test")]
     #[tokio::test]

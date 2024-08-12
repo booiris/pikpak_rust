@@ -6,14 +6,17 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
 axum = { workspace = true }
-log = { workspace = true }
-fern = { workspace = true }
 anyhow = { workspace = true }
 humantime = { workspace = true }
 tower = { workspace = true }
-tower-http = { workspace = true }
+tower-http = { workspace = true, features = [
+    "cors",
+    "catch-panic",
+    "fs",
+    "trace"
+] }
 utoipa = { workspace = true, features = ["axum_extras"] }
 utoipa-swagger-ui = { workspace = true, features = ["axum"], optional = true }
 serde = { workspace = true }
@@ -25,8 +28,13 @@ rand = { workspace = true }
 ring = { workspace = true }
 chrono = { workspace = true }
 parking_lot = { workspace = true }
-pikpak_core = { path = "../pikpak_core" }
+pikpak_core = { workspace = true }
 dotenv_codegen = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+tracing-error = { workspace = true }
+tracing-appender = { workspace = true }
+color-eyre = { workspace = true }
 
 [features]
 __local_test = []

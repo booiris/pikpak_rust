@@ -9,7 +9,6 @@ use anyhow::{anyhow, Context};
 use atomic_float::AtomicF64;
 use futures_util::StreamExt;
 use humansize::DECIMAL;
-use log::{info, warn};
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::Ordering::*;
@@ -19,6 +18,7 @@ use tokio::{
     sync::Semaphore,
 };
 use tokio_util::sync::CancellationToken;
+use tracing::{error, info, warn};
 
 use crate::{
     api::Ident,
@@ -295,7 +295,7 @@ impl Downloader {
             let _permit = match semaphore.acquire().await {
                 Ok(x) => x,
                 Err(e) => {
-                    log::error!("[download] semaphore acquire error: {:?}", e);
+                    error!("[download] semaphore acquire error: {:?}", e);
                     *status.write() = DownloadStatusKind::HasError(format!("{:?}", e));
                     return;
                 }
@@ -310,7 +310,7 @@ impl Downloader {
             {
                 Ok(x) => x,
                 Err(e) => {
-                    log::error!("[download] open file failed, error: {:?}", e);
+                    error!("[download] open file failed, error: {:?}", e);
                     *status.write() = DownloadStatusKind::HasError(format!("{:?}", e));
                     return;
                 }
@@ -335,7 +335,7 @@ impl Downloader {
                 {
                     Ok(x) => x,
                     Err(e) => {
-                        log::error!("[download] get url failed, error: {:?}", e);
+                        error!("[download] get url failed, error: {:?}", e);
                         tokio::time::sleep(Duration::from_secs(2)).await;
                         continue;
                     }
@@ -372,7 +372,7 @@ impl Downloader {
                             }
                             Err(e) => {
                                 current_speed.store(0.0, std::sync::atomic::Ordering::Relaxed);
-                                log::error!("[download] download failed, error: {:?}", e);
+                                error!("[download] download failed, error: {:?}", e);
 
                                 if matches!(e, DownloadError::ResumeFailed) {
                                     *status.write() = DownloadStatusKind::HasError("resume failed".to_string());
@@ -423,7 +423,7 @@ impl Downloader {
             if need_remove_file {
                 info!("remove file: {:?}", x.download_to_local_path);
                 if let Err(e) = tokio::fs::remove_file(&x.download_to_local_path).await {
-                    log::error!("[download] remove file failed, error: {:?}", e);
+                    error!("[download] remove file failed, error: {:?}", e);
                 }
             }
         }
@@ -519,7 +519,6 @@ async fn download_url(p: DownloadUrlParam<'_>) -> Result<bool, DownloadError> {
                         break;
                     }
                 }
-
             }
         }
     }

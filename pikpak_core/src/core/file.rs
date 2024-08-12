@@ -1,6 +1,6 @@
 use ahash::AHashMap;
-use log::trace;
 use serde::{Deserialize, Serialize};
+use tracing::trace;
 
 use crate::error::Error;
 
@@ -129,7 +129,7 @@ impl ApiClient<'_> {
 #[cfg(test)]
 mod test {
     use dotenv_codegen::dotenv;
-    use log::debug;
+    use tracing::debug;
 
     use crate::test::{test_client, test_ident};
 
