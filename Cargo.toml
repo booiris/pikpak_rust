@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["pikpak_core", "server"]
+members = ["pikpak_core", "pikpak_web"]
 
 [workspace.package]
 edition = "2021"
@@ -24,7 +24,7 @@ rand = "0.8"
 ring = "0.17"
 chrono = "0.4"
 parking_lot = "0.12"
-reqwest = "0.12"
+reqwest = { version = "0.12", default-features = false }
 thiserror = "1.0"
 md5 = "0.7"
 oauth2 = "4.4"
@@ -51,3 +51,10 @@ pikpak_core = { path = "pikpak_core" }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = "symbols"

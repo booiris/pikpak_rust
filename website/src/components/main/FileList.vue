@@ -133,7 +133,7 @@ function handleRawClick(row: tableDataType) {
             type: 'info'
         })
             .then(async () => {
-                await downloadBeginApi(row.id, './', row.fileName)
+                await downloadBeginApi(row.id, './data', row.fileName)
                     .then((_) => {
                         ElMessage({
                             type: 'success',

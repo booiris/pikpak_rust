@@ -6,3 +6,4 @@ openapi.json
 DockerFile-release
 dist
 logs
+.cargo

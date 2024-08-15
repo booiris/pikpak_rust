@@ -37,6 +37,7 @@
         "pikpak",
         "pinia",
         "reqwest",
+        "rsproxy",
         "rushstack",
         "submain",
         "thiserror",

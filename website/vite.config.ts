@@ -16,7 +16,7 @@ export default defineConfig({
     plugins: [
         vue(),
         VueDevTools(),
-        bundleAnalyzer({}),
+        // bundleAnalyzer(),
         AutoImport({
             imports: ['vue'],
             resolvers: [
