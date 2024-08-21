@@ -43,7 +43,7 @@ pub async fn login(Json(req): Json<LoginReq>) -> Result<Json<LoginResp>, BaseRes
     get_pikpak_client()
         .login(&ApiLoginReq {
             username: req.email.clone(),
-            password: req.password.clone(),
+            password: req.password.clone().into(),
         })
         .await
         .map_err(|e| {
@@ -52,7 +52,7 @@ pub async fn login(Json(req): Json<LoginReq>) -> Result<Json<LoginResp>, BaseRes
         })?;
     let token_data = TokenData {
         email: req.email,
-        password: req.password,
+        password: req.password.into(),
     };
     let token_data = serde_json::to_vec(&token_data).map_err(|e| {
         error!("[login] serialize token error: {}", e);

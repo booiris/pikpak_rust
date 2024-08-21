@@ -2,7 +2,7 @@ use std::fmt::{Debug, Display};
 
 use serde::{Deserialize, Serialize};
 
-use crate::store::UserName;
+use crate::{store::UserName, utils::secret::Password};
 
 pub mod download;
 pub mod download_pause;
@@ -41,7 +41,7 @@ pub(crate) enum RespWrapper<T> {
 #[derive(Default, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub struct Ident {
     pub username: UserName,
-    pub password: String,
+    pub password: Password,
 }
 
 impl Debug for Ident {

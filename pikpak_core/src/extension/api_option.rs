@@ -57,7 +57,7 @@ impl ApiSend for RequestBuilder {
             if retry_times == 0 {
                 loop {
                     // 更新 token 报错就不重试了
-                    let token = client.auth_token().await?;
+                    let token = client.access_token().await?;
                     match self
                         .try_clone()
                         .ok_or(Error::CloneRequestError(format!("loop times: {}", cnt)))?
@@ -76,7 +76,7 @@ impl ApiSend for RequestBuilder {
             } else {
                 for i in 0..retry_times {
                     // 更新 token 报错就不重试了
-                    let token = client.auth_token().await?;
+                    let token = client.access_token().await?;
                     match self
                         .try_clone()
                         .ok_or(Error::CloneRequestError(format!("loop times: {}", cnt)))?
@@ -97,7 +97,7 @@ impl ApiSend for RequestBuilder {
                 unreachable!("retry loop should return before this line");
             }
         } else {
-            let token = client.auth_token().await?;
+            let token = client.access_token().await?;
             self = self.bearer_auth(token);
             self.send().await.map_err(Error::NetworkError)
         }

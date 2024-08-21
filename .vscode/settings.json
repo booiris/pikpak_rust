@@ -39,6 +39,7 @@
         "reqwest",
         "rsproxy",
         "rushstack",
+        "signin",
         "submain",
         "thiserror",
         "tsbuildinfo",

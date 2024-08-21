@@ -1,57 +1,25 @@
-use std::time::Duration;
-
-use oauth2::{
-    reqwest::async_http_client, ResourceOwnerPassword, ResourceOwnerUsername, TokenResponse,
+use crate::{
+    api::Ident, core::auth::AuthTokenType, error::Error, utils::secret::Password, PkiPakApiClient,
 };
-use tracing::{error, trace};
-
-use crate::{api::Ident, core::token::AUTH_TOKEN, error::Error, PkiPakApiClient};
 
 #[derive(Default, Debug)]
 pub struct ApiLoginReq {
     pub username: String,
-    pub password: String,
-}
-
-#[derive(Default, Debug, Clone)]
-pub struct AuthTokenType {
-    pub access_token: String,
-    pub refresh_token: Option<String>,
-    pub expires_in: Duration,
+    pub password: Password,
 }
 
 impl PkiPakApiClient {
     pub async fn login(&self, req: &ApiLoginReq) -> Result<AuthTokenType, Error> {
-        let resp = self
-            .inner
-            .oauth2_client
-            .exchange_password(
-                &ResourceOwnerUsername::new(req.username.clone()),
-                &ResourceOwnerPassword::new(req.password.clone()),
+        let token = self
+            .api(
+                &Ident {
+                    username: req.username.clone(),
+                    password: req.password.clone(),
+                },
+                &None,
             )
-            .request_async(async_http_client)
-            .await
-            .map_err(|e| {
-                error!("[pikpak core login] {:?}", e);
-                Error::Oauth2Error(format!("{:?}", e))
-            })?;
-
-        trace!("[pikpak core login] {:#?}", resp);
-
-        let token = AuthTokenType {
-            access_token: resp.access_token().secret().to_string(),
-            refresh_token: resp.refresh_token().map(|x| x.secret().clone()),
-            expires_in: resp.expires_in().unwrap_or_default(),
-        };
-
-        AUTH_TOKEN.set(
-            Ident {
-                username: req.username.clone(),
-                password: req.password.clone(),
-            },
-            token.clone(),
-            Some(token.expires_in / 2),
-        );
+            .auth_token()
+            .await?;
 
         Ok(token)
     }
@@ -70,7 +38,7 @@ mod test {
 
         let req = ApiLoginReq {
             username: dotenv!("username").to_string(),
-            password: dotenv!("password").to_string(),
+            password: dotenv!("password").to_string().into(),
         };
 
         let resp = test_client().login(&req).await;

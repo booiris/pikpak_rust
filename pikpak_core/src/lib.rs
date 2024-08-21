@@ -16,7 +16,7 @@ pub mod core;
 pub mod error;
 pub mod extension;
 mod store;
-mod utils;
+pub mod utils;
 
 #[derive(Clone, Debug, Default)]
 pub struct PkiPakApiConfig {
@@ -85,7 +85,8 @@ impl PkiPakApiClientInner {
             Some(ClientSecret::new(CLIENT_SECRET.into())),
             AuthUrl::new(AUTH_URL.into()).expect("parse auth url failed"),
             Some(TokenUrl::new(TOKEN_URL.into()).expect("parse token url failed")),
-        );
+        )
+        .set_auth_type(oauth2::AuthType::RequestBody);
 
         let store = Store::new(conf.and_then(|c| c.cache_dir), decrypt_key);
 

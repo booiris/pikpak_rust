@@ -9,10 +9,10 @@ use crate::{
     PkiPakApiClient,
 };
 
+pub mod auth;
 pub mod downloader;
 pub mod file;
 pub mod folder;
-pub mod token;
 
 pub(crate) struct ApiClient<'c> {
     pub client: &'c PkiPakApiClient,
