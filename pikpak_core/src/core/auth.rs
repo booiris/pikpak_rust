@@ -163,6 +163,7 @@ struct LoginResp {
 }
 
 #[cfg(test)]
+#[cfg(feature = "__local_test")]
 mod test {
     use crate::test::{test_client, test_ident};
     use tracing::info;

@@ -134,7 +134,7 @@ function handleRawClick(row: tableDataType) {
         })
             .then(async () => {
                 await downloadBeginApi(row.id, './data', row.fileName)
-                    .then((_) => {
+                    .then(() => {
                         ElMessage({
                             type: 'success',
                             message: '"' + row.fileName + '" Download Start'

@@ -127,6 +127,7 @@ impl ApiClient<'_> {
 }
 
 #[cfg(test)]
+#[cfg(feature = "__local_test")]
 mod test {
     use dotenvy_macro::dotenv;
     use tracing::debug;

@@ -44,4 +44,5 @@ tracing-error = { workspace = true }
 workspace = true
 
 [features]
+default = []
 __local_test = []

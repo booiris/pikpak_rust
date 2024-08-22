@@ -527,6 +527,7 @@ async fn download_url(p: DownloadUrlParam<'_>) -> Result<bool, DownloadError> {
 }
 
 #[cfg(test)]
+#[cfg(feature = "__local_test")]
 mod test {
     use dotenvy_macro::dotenv;
 

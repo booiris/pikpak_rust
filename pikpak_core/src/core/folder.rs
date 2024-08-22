@@ -170,6 +170,7 @@ impl ApiClient<'_> {
 }
 
 #[cfg(test)]
+#[cfg(feature = "__local_test")]
 mod test {
     use super::*;
     use crate::test::{test_client, test_ident};

@@ -26,6 +26,7 @@ impl PkiPakApiClient {
 }
 
 #[cfg(test)]
+#[cfg(feature = "__local_test")]
 mod test {
     use super::*;
     use dotenvy_macro::dotenv;

@@ -101,6 +101,7 @@ impl PkiPakApiClientInner {
 }
 
 #[cfg(test)]
+#[cfg(feature = "__local_test")]
 mod test {
     use std::sync::OnceLock;
 
