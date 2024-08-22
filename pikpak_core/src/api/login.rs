@@ -28,7 +28,7 @@ impl PkiPakApiClient {
 #[cfg(test)]
 mod test {
     use super::*;
-    use dotenv_codegen::dotenv;
+    use dotenvy_macro::dotenv;
     use tracing::info;
 
     #[cfg(feature = "__local_test")]

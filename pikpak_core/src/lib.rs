@@ -20,7 +20,6 @@ pub mod utils;
 
 #[derive(Clone, Debug, Default)]
 pub struct PkiPakApiConfig {
-    pub proxy: Option<String>,
     pub cache_dir: Option<PathBuf>,
 }
 
@@ -72,13 +71,10 @@ impl PkiPakApiClientInner {
         );
         headers.insert("Connection", header::HeaderValue::from_static("keep-alive"));
 
-        let mut client_builder: reqwest::ClientBuilder =
-            reqwest::Client::builder().default_headers(headers);
-        if let Some(proxy) = conf.as_ref().and_then(|c| c.proxy.as_ref()) {
-            client_builder =
-                client_builder.proxy(reqwest::Proxy::all(proxy).expect("proxy format is invalid"));
-        }
-        let client = client_builder.build().expect("client build failed");
+        let client = reqwest::Client::builder()
+            .default_headers(headers)
+            .build()
+            .expect("client build failed");
 
         let oauth2_client = BasicClient::new(
             ClientId::new(CLIENT_ID.into()),
@@ -108,7 +104,7 @@ impl PkiPakApiClientInner {
 mod test {
     use std::sync::OnceLock;
 
-    use dotenv_codegen::dotenv;
+    use dotenvy_macro::dotenv;
     use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
     use crate::api::Ident;

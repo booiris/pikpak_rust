@@ -36,8 +36,7 @@ mod utils;
 
 pub async fn start_server(
     host: impl Into<String>,
-    port: impl Into<&str>,
-    proxy: Option<String>,
+    port: impl AsRef<str>,
     cache_dir: Option<PathBuf>,
     decrypt_key: String,
 ) -> Result<(), Error> {
@@ -45,7 +44,7 @@ pub async fn start_server(
 
     PIKPAK_CORE_CLIENT
         .set(PkiPakApiClient::new(
-            Some(PkiPakApiConfig { proxy, cache_dir }),
+            Some(PkiPakApiConfig { cache_dir }),
             decrypt_key,
         ))
         .map_err(|_| {
@@ -77,7 +76,7 @@ pub async fn start_server(
     #[cfg(feature = "utoipa")]
     let app = app.merge(SwaggerUi::new("/doc").url("/openapi.json", ApiDoc::openapi()));
 
-    let addr = host.into() + ":" + port.into();
+    let addr = host.into() + ":" + port.as_ref();
     let listener = tokio::net::TcpListener::bind(&addr)
         .await
         .map_err(|e| {

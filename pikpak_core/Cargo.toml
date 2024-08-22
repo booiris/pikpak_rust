@@ -36,7 +36,7 @@ atomic_float = { workspace = true }
 
 [dev-dependencies]
 ctor = { workspace = true }
-dotenv_codegen = { workspace = true }
+dotenvy_macro = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 tracing-error = { workspace = true }
 

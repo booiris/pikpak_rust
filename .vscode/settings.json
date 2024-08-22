@@ -18,6 +18,7 @@
         "codegen",
         "consts",
         "dotenv",
+        "dotenvy",
         "Encrypter",
         "Fira",
         "fontawesome",

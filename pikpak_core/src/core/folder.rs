@@ -173,7 +173,7 @@ impl ApiClient<'_> {
 mod test {
     use super::*;
     use crate::test::{test_client, test_ident};
-    use dotenv_codegen::dotenv;
+    use dotenvy_macro::dotenv;
     use tracing::debug;
 
     #[cfg(feature = "__local_test")]

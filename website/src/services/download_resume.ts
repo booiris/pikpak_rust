@@ -1,16 +1,10 @@
-import { Configuration, DownloadResumeApi } from '@/api'
-import { useBackendUrlStore } from '@/stores/backend_url'
-import { useTokenStore } from '@/stores/token'
+import { DownloadResumeApi } from '@/api'
+import { clientWrapper } from './wrapper'
 
-const client = new DownloadResumeApi(
-    new Configuration({
-        basePath: useBackendUrlStore().storedUrl,
-        accessToken: useTokenStore().storedToken
-    })
-)
+const client = clientWrapper(DownloadResumeApi)
 
 export const downloadResumeApi = async (id: string) => {
-    return client.downloadResume(
+    return client().downloadResume(
         {
             file_id: id
         },

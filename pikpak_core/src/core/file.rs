@@ -128,7 +128,7 @@ impl ApiClient<'_> {
 
 #[cfg(test)]
 mod test {
-    use dotenv_codegen::dotenv;
+    use dotenvy_macro::dotenv;
     use tracing::debug;
 
     use crate::test::{test_client, test_ident};

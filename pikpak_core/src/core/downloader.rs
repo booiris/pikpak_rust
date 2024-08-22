@@ -528,7 +528,7 @@ async fn download_url(p: DownloadUrlParam<'_>) -> Result<bool, DownloadError> {
 
 #[cfg(test)]
 mod test {
-    use dotenv_codegen::dotenv;
+    use dotenvy_macro::dotenv;
 
     use super::*;
     use crate::test::{test_client, test_ident};

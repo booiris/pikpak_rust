@@ -29,7 +29,6 @@ ring = { workspace = true }
 chrono = { workspace = true }
 parking_lot = { workspace = true }
 pikpak_core = { workspace = true }
-dotenv_codegen = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 tracing-error = { workspace = true }
