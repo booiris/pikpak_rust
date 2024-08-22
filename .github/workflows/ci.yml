@@ -48,6 +48,10 @@ jobs:
   frontend:
     name: Frontend
 
+    defaults:
+      run:
+        working-directory: ./website
+
     runs-on: ubuntu-latest
 
     steps:
@@ -57,9 +61,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "14"
-
-      - name: CD
-        run: cd website
 
       - name: Install Dependencies
         run: npm install

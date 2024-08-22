@@ -54,7 +54,7 @@ impl<
                     .map_err(|e| {
                         error!("Failed to read origin file: {} path: {}", e, x.display());
                     })
-                    .ok()?;
+                    .expect("Failed to read origin file");
                 let data = bincode::deserialize(&data)
                     .map_err(|e| {
                         error!(
@@ -312,6 +312,8 @@ mod test {
 
     #[tokio::test]
     async fn test_encrypted_persistent_memory() {
+        std::fs::create_dir_all("cache").unwrap();
+
         let data = EncryptedRecyclePersistentMemory::<String, TestData>::new(
             None,
             Some(PathBuf::from("cache/test.bin")),
