@@ -62,10 +62,10 @@ jobs:
           node-version: "22"
 
       - name: Install Dependencies
-        run: pnpm install
+        run: npm install
 
       - name: Lint
-        run: pnpm run lint
+        run: npm run lint
 
       - name: Build
-        run: pnpm run build
+        run: npm run build
