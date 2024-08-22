@@ -1,3 +1,5 @@
+use std::fmt::{Debug, Display};
+
 use axum::Json;
 use base64::prelude::*;
 use chrono::{Duration, Utc};
@@ -14,10 +16,28 @@ use crate::{
 
 use super::{BaseResp, CIPHER};
 
-#[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
+#[derive(Serialize, Deserialize, ToSchema, Clone)]
 pub struct LoginReq {
     email: String,
     password: String,
+}
+
+impl Display for LoginReq {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LoginReq")
+            .field("email", &self.email)
+            .field("password", &"********")
+            .finish()
+    }
+}
+
+impl Debug for LoginReq {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LoginReq")
+            .field("email", &self.email)
+            .field("password", &"********")
+            .finish()
+    }
 }
 
 #[derive(Serialize, Deserialize, ToSchema, ToResponse)]

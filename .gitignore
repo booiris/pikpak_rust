@@ -1,6 +1,6 @@
 /target
 openapi.json
-**/.env
+**/.env**
 **/cache
 **/**.mp4
 DockerFile-release
