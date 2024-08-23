@@ -1,0 +1,20 @@
+services:
+  pikpak:
+    image: pikpak:{your_version} # 需要使用项目的 Dockerfile 自己构建镜像
+    container_name: pikpak
+    environment:
+      - http_proxy=$your_proxy_addr$
+      - https_proxy=$your_proxy_addr$
+      - PIKPAK_WEB_HOST=0.0.0.0 # default 0.0.0.0
+      - PIKPAK_WEB_PORT=22522  # default 22522
+      - PIKPAK_WEB_CACHE_DIR=./cache # default ./cache
+      - PIKPAK_WEB_DECRYPT_KEY=$your_DECRYPT_KEY$ # 用于加密保存到本地的数据
+      - PIKPAK_WEB_FRONTEND_HOST=0.0.0.0 # default 0.0.0.0
+      - PIKPAK_WEB_FRONTEND_PORT=22500 # default 22500
+      - RUST_LOG=debug # info,debug,warn,error
+    volumes:
+      - ./:/data
+      - ./logs:/logs
+      - ./cache:/cache
+    network_mode: "host"
+    restart: unless-stopped
