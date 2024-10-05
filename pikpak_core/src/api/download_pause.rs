@@ -9,6 +9,7 @@ pub struct ApiDownloadPauseReq {
 }
 
 impl PkiPakApiClient {
+    #[tracing::instrument(skip_all)]
     pub async fn download_pause(
         &self,
         req: &ApiDownloadPauseReq,

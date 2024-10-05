@@ -22,7 +22,7 @@ pub struct EncryptedPersistentMemory<
 > {
     data: Arc<Mutex<AHashMap<K, MemoryElem<V>>>>,
     persistence_interval: Duration,
-    persistence_file: Option<PathBuf>,
+    persistence_file_path: Option<PathBuf>,
     cancel: Option<CancellationToken>,
 }
 
@@ -33,32 +33,37 @@ impl<
 {
     pub fn new(
         origin_file: Option<PathBuf>,
-        persistence_file: Option<PathBuf>,
+        persistence_file_path: Option<PathBuf>,
         persistence_interval: Option<Duration>,
     ) -> Self {
         let data = origin_file
-            .and_then(|x| {
-                let data = std::fs::read(x.clone())
-                    .map_err(|e| {
-                        error!("Failed to read origin file: {} path: {}", e, x.display());
-                    })
-                    .expect("Failed to read origin file");
-                let data = bincode::deserialize(&data)
-                    .map_err(|e| {
-                        error!(
-                            "Failed to deserialize origin file: {} path: {}",
-                            e,
-                            x.display()
-                        );
-                    })
-                    .ok()?;
-                Some(data)
+            .and_then(|x| match std::fs::read(x.clone()) {
+                Ok(data) => {
+                    let data = bincode::deserialize(&data)
+                        .map_err(|e| {
+                            error!(
+                                "Failed to deserialize origin file: {} path: {}",
+                                e,
+                                x.display()
+                            );
+                        })
+                        .ok()?;
+                    Some(data)
+                }
+                Err(e) => {
+                    error!(
+                        "Failed to read origin file, err: {} path: {}",
+                        e,
+                        x.display()
+                    );
+                    None
+                }
             })
             .unwrap_or_default();
 
         let mut x = Self {
             data: Arc::new(Mutex::new(data)),
-            persistence_file,
+            persistence_file_path,
             persistence_interval: persistence_interval.unwrap_or(Duration::from_secs(60)),
             cancel: None,
         };
@@ -172,14 +177,14 @@ impl<
     }
 
     fn persistence(&mut self) {
-        if self.persistence_file.is_none() {
+        if self.persistence_file_path.is_none() {
             return;
         }
 
         let cancel = CancellationToken::new();
         self.cancel = Some(cancel.clone());
 
-        let persistence_file = self.persistence_file.clone();
+        let persistence_file = self.persistence_file_path.clone();
         let persistence_interval = self.persistence_interval;
         let data = self.data.clone();
         tokio::spawn(async move {

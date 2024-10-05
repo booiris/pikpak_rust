@@ -71,6 +71,8 @@ impl ApiClient<'_> {
             password: self.ident.password.clone(),
         };
 
+        debug!("[login] login req {:#?}", req);
+
         let resp = self
             .http_client()
             .post("https://user.mypikpak.com/v1/auth/signin")
@@ -79,9 +81,12 @@ impl ApiClient<'_> {
             .send()
             .await
             .context("[login] send req error")?
-            .json::<LoginResp>()
-            .await
-            .context("[login] get data error")?;
+            .text()
+            .await?;
+
+        debug!("[login] login resp {:#?}", resp);
+
+        let resp = serde_json::from_str::<LoginResp>(&resp).context("[login] get data error")?;
 
         Ok(AuthTokenType {
             access_token: resp.access_token,
@@ -102,6 +107,8 @@ impl ApiClient<'_> {
             device_id: self.client.inner.device_id.clone(),
             meta,
         };
+
+        debug!("[get_captcha_token] req {:#?}", req);
 
         let resp = self
             .http_client()

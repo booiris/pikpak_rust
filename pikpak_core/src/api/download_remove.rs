@@ -10,6 +10,7 @@ pub struct ApiDownloadRemoveReq {
 }
 
 impl PkiPakApiClient {
+    #[tracing::instrument(skip_all)]
     pub async fn download_remove(
         &self,
         req: &ApiDownloadRemoveReq,

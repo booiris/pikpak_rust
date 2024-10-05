@@ -16,6 +16,7 @@ pub struct ApiDownloadReq {
 }
 
 impl PkiPakApiClient {
+    #[tracing::instrument(skip_all)]
     pub async fn download(
         &self,
         req: &ApiDownloadReq,
