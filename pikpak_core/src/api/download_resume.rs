@@ -9,6 +9,7 @@ pub struct ApiDownloadResumeReq {
 }
 
 impl PkiPakApiClient {
+    #[tracing::instrument(skip_all)]
     pub async fn download_resume(
         &self,
         req: &ApiDownloadResumeReq,

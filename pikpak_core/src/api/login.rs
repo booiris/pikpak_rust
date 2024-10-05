@@ -9,6 +9,7 @@ pub struct ApiLoginReq {
 }
 
 impl PkiPakApiClient {
+    #[tracing::instrument(skip_all)]
     pub async fn login(&self, req: &ApiLoginReq) -> Result<AuthTokenType, Error> {
         let token = self
             .api(

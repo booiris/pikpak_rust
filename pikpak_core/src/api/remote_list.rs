@@ -16,6 +16,7 @@ pub struct ApiRemoteListResp {
 }
 
 impl PkiPakApiClient {
+    #[tracing::instrument(skip_all)]
     pub async fn remote_list(
         &self,
         req: &ApiRemoteListReq,

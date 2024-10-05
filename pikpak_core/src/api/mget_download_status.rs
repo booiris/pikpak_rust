@@ -21,6 +21,7 @@ pub struct ApiMgetDownloadStatusResp {
 }
 
 impl PkiPakApiClient {
+    #[tracing::instrument(skip_all)]
     pub async fn mget_download_status(
         &self,
         req: &ApiMgetDownloadStatusReq,
