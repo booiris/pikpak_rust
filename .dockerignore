@@ -9,6 +9,7 @@
 /tmp/
 /logs/
 **/cache
+/source
 
 .gitignore
 **.md

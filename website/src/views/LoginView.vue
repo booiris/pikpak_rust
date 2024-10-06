@@ -58,13 +58,13 @@ import icon from '@/assets/rust_pikpak.png'
 import router from '@/router'
 import { parseApiError } from '@/utils/handle_error'
 
-const defaultUrl = `http(s)://${window.location.hostname}:22523`
+const defaultUrl = `http(s)://${window.location.hostname}:22522`
 const backendStoreUrl = useBackendUrlStore()
 function urlValue(): string {
     if (backendStoreUrl.storedUrl != '') {
         return backendStoreUrl.storedUrl
     } else {
-        return `http://${window.location.hostname}:22523`
+        return `http://${window.location.hostname}:22522`
     }
 }
 

@@ -2,12 +2,12 @@ FROM node AS frontend
 COPY website .
 RUN  npm install --registry https://registry.npmmirror.com && npm run build
 
-FROM --platform=linux/amd64 messense/rust-musl-cross:x86_64-musl AS amd64
+FROM  messense/rust-musl-cross:x86_64-musl AS amd64
 COPY . .
 RUN cd pikpak_web && cargo install --path . --root /
 
 
-FROM --platform=linux/amd64 messense/rust-musl-cross:aarch64-musl AS arm64
+FROM  messense/rust-musl-cross:aarch64-musl AS arm64
 COPY . .
 RUN cargo install --path . --root /
 
