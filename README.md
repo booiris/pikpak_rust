@@ -2,7 +2,7 @@
 
 > pikpak web 客户端
 
-![demo](./source/demo.mp4)
+./source/demo.mp4
 
 ## install
 
