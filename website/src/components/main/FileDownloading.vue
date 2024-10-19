@@ -4,7 +4,7 @@
     </div>
     <span v-else>
         <el-empty v-if="tableData.length === 0" description="No Downloading Task" />
-        <el-table v-else :data="tableData" style="width: 100%">
+        <el-table v-else :data="tableData" style="width: 100%" max-height="500px">
             <el-table-column prop="fileName" label="Name" width="200" show-overflow-tooltip />
             <el-table-column label="progress" width="350">
                 <template #default="scope">
@@ -114,7 +114,7 @@ async function get_downloading_status(): Promise<tableDataType[]> {
                     fileName: item.remote_file_name,
                     total: item.total,
                     now: item.downloaded,
-                    current_speed: prettyBytes(item.current_speed / 10 ) + '/s',
+                    current_speed: prettyBytes(item.current_speed / 10) + '/s',
                     download_time: humanizer.humanize(item.downloaded_time * 1000, {
                         language: 'shortEn'
                     }),
