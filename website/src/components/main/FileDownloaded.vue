@@ -4,7 +4,7 @@
     </div>
     <span v-else>
         <el-empty v-if="tableData.length === 0" description="No Downloaded Task" />
-        <el-table v-else :data="tableData" style="width: 100%">
+        <el-table v-else :data="tableData" style="width: 100%" max-height="500px">
             <el-table-column prop="fileName" label="Name" width="500" show-overflow-tooltip />
             <el-table-column prop="human_total" label="total" show-overflow-tooltip />
             <el-table-column prop="avg_speed" label="avg speed" show-overflow-tooltip />
